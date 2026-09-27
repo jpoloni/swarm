@@ -94,16 +94,21 @@ git diff --check
 - `src/swarm_oneshot/orchestrator.py`: ciclo de planejamento, execução, revisão, síntese e gestão de orçamento.
 - `src/swarm_oneshot/sanitize.py`: sanitização e proteção contra vazamento de segredos em artefatos.
 - `src/swarm_oneshot/cli.py`: ponto de entrada da CLI, tratamento de erros e escrita segura.
+- `src/swarm_oneshot/tools.py`: ferramentas de workers (`document_search`, `repository_read`, `code_structure_inspect`).
 - `src/swarm_oneshot/env_config.py`: carregamento do `.env` e overrides.
 - `src/swarm_oneshot/runner.py`: adaptador do Agents SDK.
-- `tests/test_swarm.py`: 25 testes cobrindo orquestração, multi-agente, orçamento, segredos, CLI e subprocesso.
+- `tests/test_swarm.py`: 29 testes cobrindo orquestração, multi-agente, ferramentas, orçamento, segredos, CLI e subprocesso.
 
-## Melhorias implementadas nesta sessão
+## Entregas concluídas nesta sessão
 
-Todas as 5 melhorias apontadas na auditoria anterior foram concluídas:
-
-1. **Cenário multi-agente `e2e_multi.yaml`**: testado offline no `pytest` e executado com sucesso na API real da OpenAI.
-2. **Fluxo completo CLI → JSON**: testes de ponta a ponta validando exit codes, criação de diretórios e integridade do JSON gerado.
-3. **Proteção de segredos**: módulo `sanitize.py` integrado à geração do `FinalResult`, redigindo chaves e tokens de padrão `sk-...`.
-4. **Tratamento de falhas de subprocesso e I/O**: `cli.py` e `scripts/e2e.py` verificam existência do arquivo de saída e reportam erros de subprocesso.
-5. **Reembolso do orçamento de chamadas**: `_call` com `try/finally` garantindo que `refund` sempre seja executado em falhas, cancelamentos e retries de workers.
+1. **Commit inicial do ciclo estável**: commit `812adf5` consolidando o núcleo do swarm e as 5 melhorias da auditoria.
+2. **Expansão de ferramentas dos workers**:
+   - Adicionada ferramenta `code_structure_inspect` (análise de AST para extrair classes, métodos e imports);
+   - Testes unitários para `document_search`, `repository_read` e `code_structure_inspect`.
+3. **Novos templates de casos de uso reais (`examples/`)**:
+   - `examples/dependency_audit.yaml` com `dependencies_sample.toml`;
+   - `examples/changelog_generation.yaml` com `commits_sample.txt`;
+   - `examples/code_review.yaml` com `code_sample.py`.
+4. **Empacotamento e CLI binária**:
+   - `pip install -e .` configurado e testado com sucesso;
+   - Executável `venv/bin/swarm-oneshot` pronto para uso em produção.

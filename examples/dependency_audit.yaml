@@ -1,0 +1,50 @@
+schema_version: "1"
+run_id: "dependency-audit-sample"
+objective: >-
+  Auditar as dependências declaradas em dependencies_sample.toml, identificar
+  versões desatualizadas ou vulneráveis e propor ações de mitigação e compatibilidade.
+context:
+  text: >-
+    Analise as versões de pacotes e restrições semânticas. Aponte riscos
+    concretos com base no conteúdo declarado no artefato.
+  artifacts:
+    - dependencies_sample.toml
+orchestrators:
+  count: 2
+  agents:
+    - id: principal
+      role: primary
+      model: "gpt-5.6-luna"
+      instructions: >-
+        Distribua a análise das dependências entre os workers e consolide o relatório final
+        com priorização por severidade.
+    - id: coordenador-compatibilidade
+      role: coordinator
+      model: "gpt-5.6-luna"
+      instructions: >-
+        Oriente e revise a avaliação de compatibilidade de versões e potenciais conflitos de dependências.
+workers:
+  count: 2
+  agents:
+    - id: analise-versoes
+      specialty: >-
+        Inspecione dependencies_sample.toml para verificar restrições de versão e riscos de incompatibilidade.
+      model: "gpt-5.6-luna"
+      tools: [document_search, repository_read]
+    - id: analise-seguranca
+      specialty: >-
+        Avalie dependências com versões antigas ou vulnerabilidades conhecidas no ecossistema Python.
+      model: "gpt-5.6-luna"
+      tools: [document_search, repository_read]
+execution:
+  max_parallel_workers: 2
+  max_model_calls: 10
+  timeout_seconds: 240
+  worker_timeout_seconds: 90
+  max_retries_per_task: 1
+  on_worker_failure: partial
+  allowed_models: ["gpt-5.6-luna", "gpt-5.6-sol"]
+output:
+  language: pt-BR
+  format: markdown
+  require_evidence: true

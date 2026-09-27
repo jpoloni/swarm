@@ -1,0 +1,51 @@
+schema_version: "1"
+run_id: "code-review-sample"
+objective: >-
+  Realizar revisão técnica do módulo code_sample.py analisando arquitetura,
+  tratamento de segredos, validação de entradas e robustez de exceções.
+context:
+  text: >-
+    Inspecione a estrutura das classes e o código fonte de code_sample.py.
+    Cite linhas específicas para cada recomendação de melhoria ou vulnerabilidade.
+  artifacts:
+    - code_sample.py
+orchestrators:
+  count: 2
+  agents:
+    - id: principal
+      role: primary
+      model: "gpt-5.6-luna"
+      instructions: >-
+        Distribua a análise técnica do código em frentes de arquitetura e segurança/qualidade,
+        consolidando um feedback prático com ações priorizadas.
+    - id: coordenador-qualidade
+      role: coordinator
+      model: "gpt-5.6-luna"
+      instructions: >-
+        Oriente e revise a avaliação dos workers garantindo que apenas observações fundamentadas
+        em código e linhas exatas sejam aceitas.
+workers:
+  count: 2
+  agents:
+    - id: analista-arquitetura
+      specialty: >-
+        Analise a estrutura de classes, métodos, imports e tipagem em code_sample.py.
+      model: "gpt-5.6-luna"
+      tools: [code_structure_inspect, repository_read]
+    - id: analista-seguranca-testes
+      specialty: >-
+        Inspecione o manuseio de credenciais, validação de parâmetros e cobertura de erros em code_sample.py.
+      model: "gpt-5.6-luna"
+      tools: [repository_read, document_search]
+execution:
+  max_parallel_workers: 2
+  max_model_calls: 10
+  timeout_seconds: 240
+  worker_timeout_seconds: 90
+  max_retries_per_task: 1
+  on_worker_failure: partial
+  allowed_models: ["gpt-5.6-luna", "gpt-5.6-sol"]
+output:
+  language: pt-BR
+  format: markdown
+  require_evidence: true

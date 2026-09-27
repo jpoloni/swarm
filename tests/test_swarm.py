@@ -16,7 +16,7 @@ from swarm_oneshot.models import (
 from swarm_oneshot.orchestrator import Swarm
 from swarm_oneshot.progress import Progress
 from swarm_oneshot.runner import AgentRun
-from swarm_oneshot.tools import resolve_allowed_path
+from swarm_oneshot.tools import build_tools, resolve_allowed_path
 from swarm_oneshot.validation import PlanError, validate_plan
 
 
@@ -410,3 +410,60 @@ def test_subprocess_cli_handles_errors():
     )
     assert proc.returncode == 2
     assert "Configuração inválida" in proc.stderr
+
+
+def test_tool_document_search_behavior(tmp_path):
+    doc = tmp_path / "notes.txt"
+    doc.write_text("Linha 1: Introdução\nLinha 2: Configuração de Banco\nLinha 3: Conclusão\n", encoding="utf-8")
+    tools = build_tools(["document_search"], tmp_path, ["notes.txt"])
+    search_fn = tools[0].__wrapped__
+
+    assert "notes.txt:2: Linha 2: Configuração de Banco" in search_fn("banco")
+    assert search_fn("inexistente") == "Nenhum resultado."
+    assert search_fn("   ") == "Consulta vazia."
+
+
+def test_tool_repository_read_behavior(tmp_path):
+    code = tmp_path / "app.py"
+    code.write_text("def hello():\n    return 'world'\n", encoding="utf-8")
+    tools = build_tools(["repository_read"], tmp_path, ["app.py"])
+    read_fn = tools[0].__wrapped__
+
+    content = read_fn("app.py")
+    assert "app.py:1: def hello():" in content
+    assert "app.py:2:     return 'world'" in content
+
+
+def test_tool_code_structure_inspect_behavior(tmp_path):
+    py_file = tmp_path / "service.py"
+    py_file.write_text(
+        "import os\nfrom typing import Any\n\nclass DataService:\n    def fetch(self, query):\n        pass\n\ndef run():\n    pass\n",
+        encoding="utf-8",
+    )
+    tools = build_tools(["code_structure_inspect"], tmp_path, ["service.py"])
+    inspect_fn = tools[0].__wrapped__
+
+    summary = inspect_fn("service.py")
+    assert "import os" in summary
+    assert "from typing import Any" in summary
+    assert "class DataService (métodos: fetch)" in summary
+    assert "def run()" in summary
+
+    # Arquivo não .py
+    txt_file = tmp_path / "doc.txt"
+    txt_file.write_text("texto simples", encoding="utf-8")
+    tools_txt = build_tools(["code_structure_inspect"], tmp_path, ["doc.txt"])
+    assert "apenas arquivos .py são suportados" in tools_txt[0].__wrapped__("doc.txt")
+
+    # Arquivo com erro de sintaxe
+    bad_py = tmp_path / "bad.py"
+    bad_py.write_text("def def def invalid syntax", encoding="utf-8")
+    tools_bad = build_tools(["code_structure_inspect"], tmp_path, ["bad.py"])
+    assert "erro de sintaxe" in tools_bad[0].__wrapped__("bad.py")
+
+
+def test_worker_spec_accepts_all_registered_tools():
+    data = config_data()
+    data["workers"]["agents"][0]["tools"] = ["document_search", "repository_read", "code_structure_inspect"]
+    config = SwarmConfig.model_validate(data)
+    assert config.workers.agents[0].tools == ["document_search", "repository_read", "code_structure_inspect"]

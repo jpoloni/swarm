@@ -1,0 +1,5 @@
+feat(auth): add OAuth2 PKCE login support
+fix(db): resolve connection pool leak on timeout
+BREAKING CHANGE(api): change /v1/users response format from raw array to {users: [...], total: count}
+perf(cache): add Redis cache for product catalog
+fix(ui): prevent double submission on checkout button

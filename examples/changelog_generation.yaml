@@ -1,0 +1,50 @@
+schema_version: "1"
+run_id: "changelog-generation-sample"
+objective: >-
+  Analisar o histórico de commits em commits_sample.txt e gerar um changelog
+  estruturado com destaque para Breaking Changes, Novas Funcionalidades e Correções.
+context:
+  text: >-
+    Baseie-se exclusivamente nos commits declarados no artefato. Siga o formato
+    Keep a Changelog categorizando as alterações.
+  artifacts:
+    - commits_sample.txt
+orchestrators:
+  count: 2
+  agents:
+    - id: principal
+      role: primary
+      model: "gpt-5.6-luna"
+      instructions: >-
+        Organize a extração dos commits entre breaking changes e melhorias/correções,
+        consolidando uma nota de release clara para desenvolvedores.
+    - id: coordenador-release
+      role: coordinator
+      model: "gpt-5.6-luna"
+      instructions: >-
+        Oriente e revise a classificação dos tipos de mudança e impacto para os usuários da API.
+workers:
+  count: 2
+  agents:
+    - id: extrator-breaking
+      specialty: >-
+        Localize commits com BREAKING CHANGE e detalhe impacto e passos de migração necessários.
+      model: "gpt-5.6-luna"
+      tools: [document_search, repository_read]
+    - id: extrator-features-fixes
+      specialty: >-
+        Classifique commits do tipo feat, fix e perf em suas respectivas seções do changelog.
+      model: "gpt-5.6-luna"
+      tools: [document_search, repository_read]
+execution:
+  max_parallel_workers: 2
+  max_model_calls: 10
+  timeout_seconds: 240
+  worker_timeout_seconds: 90
+  max_retries_per_task: 1
+  on_worker_failure: partial
+  allowed_models: ["gpt-5.6-luna", "gpt-5.6-sol"]
+output:
+  language: pt-BR
+  format: markdown
+  require_evidence: true

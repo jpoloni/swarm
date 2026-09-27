@@ -58,4 +58,38 @@ def build_tools(names: list[str], base_dir: Path, artifacts: list[str]) -> list[
 
         tools.append(repository_read)
 
+    if "code_structure_inspect" in names:
+        import ast
+
+        @function_tool
+        def code_structure_inspect(path: str) -> str:
+            """Inspect Python code structure (classes, functions, imports) in a declared artifact."""
+            source_path = resolve_allowed_path(base_dir, artifacts, path)
+            if not source_path.name.endswith(".py"):
+                return f"{path}: apenas arquivos .py são suportados por esta ferramenta."
+            text = source_path.read_text(encoding="utf-8")
+            try:
+                tree = ast.parse(text, filename=path)
+            except SyntaxError as err:
+                return f"{path}: erro de sintaxe na linha {err.lineno}: {err.msg}"
+
+            lines: list[str] = [f"Estrutura de {path}:"]
+            for node in tree.body:
+                if isinstance(node, ast.ClassDef):
+                    methods = [n.name for n in node.body if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))]
+                    lines.append(f"  linha {node.lineno}: class {node.name} (métodos: {', '.join(methods) or 'nenhum'})")
+                elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                    prefix = "async def" if isinstance(node, ast.AsyncFunctionDef) else "def"
+                    args = [a.arg for a in node.args.args]
+                    lines.append(f"  linha {node.lineno}: {prefix} {node.name}({', '.join(args)})")
+                elif isinstance(node, ast.Import):
+                    names_str = ", ".join(alias.name for alias in node.names)
+                    lines.append(f"  linha {node.lineno}: import {names_str}")
+                elif isinstance(node, ast.ImportFrom):
+                    names_str = ", ".join(alias.name for alias in node.names)
+                    lines.append(f"  linha {node.lineno}: from {node.module or ''} import {names_str}")
+            return "\n".join(lines) if len(lines) > 1 else f"{path}: nenhum símbolo de alto nível encontrado."
+
+        tools.append(code_structure_inspect)
+
     return tools

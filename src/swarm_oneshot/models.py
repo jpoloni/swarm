@@ -27,7 +27,7 @@ class WorkerSpec(StrictModel):
     id: str = Field(min_length=1)
     specialty: str = Field(min_length=1)
     model: str = Field(min_length=1)
-    tools: list[Literal["document_search", "repository_read"]] = Field(default_factory=list)
+    tools: list[Literal["document_search", "repository_read", "code_structure_inspect"]] = Field(default_factory=list)
 
 
 class OrchestratorTeam(StrictModel):
