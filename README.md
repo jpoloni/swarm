@@ -36,7 +36,7 @@ Para uma configuração própria:
 venv/bin/python -m swarm_oneshot run --config minha-config.yaml --output artifacts/resultado.json
 ```
 
-A CLI imprime barras por fase em `stderr` e grava o contrato final em JSON. O exemplo usa `gpt-6-astra`; ajuste os modelos do `.env` e `SWARM_ALLOWED_MODELS` caso sua conta use outros IDs. `allowed_models` é um catálogo local opcional, não uma consulta de disponibilidade da API. Variáveis exportadas no shell têm prioridade sobre o `.env`.
+A CLI imprime barras por fase em `stderr` e grava o contrato final em JSON. O exemplo usa `gpt-5.6-luna`; ajuste os modelos do `.env` e `SWARM_ALLOWED_MODELS` caso sua conta use outros IDs. `allowed_models` é um catálogo local opcional, não uma consulta de disponibilidade da API. Variáveis exportadas no shell têm prioridade sobre o `.env`.
 
 ## Estrutura
 

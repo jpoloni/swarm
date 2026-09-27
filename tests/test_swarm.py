@@ -101,7 +101,7 @@ def test_two_workers_run_in_parallel_and_progress_completes():
     assert fake.max_active_workers == 2
     assert "workers        [████████████████████] 2/2" in progress
     assert "síntese" in progress
-    assert result.agent_models == {"principal": "gpt-6-astra", "release-a": "gpt-6-astra", "release-b": "gpt-6-astra"}
+    assert result.agent_models == {"principal": "gpt-5.6-luna", "release-a": "gpt-5.6-luna", "release-b": "gpt-5.6-luna"}
 
 
 def test_dependency_waits_for_predecessor():
@@ -115,11 +115,11 @@ def test_dependency_waits_for_predecessor():
 def test_coordinator_reviews_its_track():
     data = config_data()
     data["orchestrators"]["count"] = 2
-    data["orchestrators"]["agents"].append({"id": "coordenador", "role": "coordinator", "model": "gpt-6-astra", "instructions": "Revise a frente."})
+    data["orchestrators"]["agents"].append({"id": "coordenador", "role": "coordinator", "model": "gpt-5.6-luna", "instructions": "Revise a frente."})
     config = SwarmConfig.model_validate(data)
     result, progress = run_fake(config, FakeRunner(coordinator=True))
     assert result.status == "completed"
-    assert result.agent_models["coordenador"] == "gpt-6-astra"
+    assert result.agent_models["coordenador"] == "gpt-5.6-luna"
     assert "coordenação" in progress
     assert "revisão        [████████████████████] 1/1" in progress
 

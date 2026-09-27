@@ -12,18 +12,18 @@ orchestrators:
   agents:
     - id: principal
       role: primary
-      model: "gpt-6-astra"
+      model: "gpt-5.6-luna"
       instructions: "Planeje duas análises independentes, distribua aos workers e sintetize com precisão."
 workers:
   count: 2
   agents:
     - id: release-a
       specialty: "Analise somente a Versão A e identifique mudanças e impacto."
-      model: "gpt-6-astra"
+      model: "gpt-5.6-luna"
       tools: []
     - id: release-b
       specialty: "Analise somente a Versão B e identifique mudanças e impacto."
-      model: "gpt-6-astra"
+      model: "gpt-5.6-luna"
       tools: []
 execution:
   max_parallel_workers: 2
@@ -32,7 +32,7 @@ execution:
   worker_timeout_seconds: 90
   max_retries_per_task: 1
   on_worker_failure: fail
-  allowed_models: ["gpt-6-astra"]
+  allowed_models: ["gpt-5.6-luna"]
 output:
   language: pt-BR
   format: markdown
