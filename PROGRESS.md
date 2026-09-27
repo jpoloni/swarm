@@ -15,9 +15,12 @@ Atualizado em 2026-09-26 (Sessão 22:40).
 | Orçamento de chamadas | `██████████` 100% | Reembolso seguro com `try/finally` em falhas, cancelamentos e retries |
 
 Últimos casos reais validados com API:
+- `examples/terminais_cordilheira/` → `artifacts/terminais_cordilheira_parecer.json`, status `completed` (14 chamadas, 100% de conformidade com gabarito).
+- `examples/aurora/` → `artifacts/aurora_decisao_comite_otimizada.json`, status `completed` (11 chamadas, 100% aderente ao gabarito).
+- `examples/contract_audit.yaml` → `artifacts/due_diligence_contrato.json`, status `completed` (11 chamadas).
 - `audit_repo.yaml` → `artifacts/auditoria.json`, status `completed` (13 chamadas).
-- `e2e.yaml` → `artifacts/e2e-result.json`, status `completed` (4 chamadas).
-- `e2e_multi.yaml` → `artifacts/e2e-multi-result.json`, status `completed` (6 chamadas).
+- `examples/e2e.yaml` → `artifacts/e2e-result.json`, status `completed` (4 chamadas).
+- `examples/e2e_multi.yaml` → `artifacts/e2e-multi-result.json`, status `completed` (6 chamadas).
 
 Para repetir os cenários E2E: `venv/bin/python scripts/e2e.py`.
 O handoff operacional atualizado está em [HANDOFF.md](HANDOFF.md).

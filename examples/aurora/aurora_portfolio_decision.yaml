@@ -1,0 +1,82 @@
+schema_version: "1"
+run_id: "aurora-horizonte-digital-2027"
+objective: >-
+  Elaborar o Parecer Executivo de Alocação de Carteira 2027 do Programa Horizonte Digital
+  para o Comitê de TIC da Aurora Energia S.A. Atender obrigatoriamente às diretrizes MUST-01
+  a MUST-10 da política de decisão, respeitando o teto de R$ 58,0 MM (R$ 31,2 MM comprometidos
+  + R$ 26,8 MM discricionários), definindo quais frentes F1 a F6 financiar, o tratamento dos 5
+  contratos existentes, o sequenciamento em janelas de parada (mai/27 e set/27) e a mitigação dos
+  riscos regulatórios (ANP/Auditoria 31/12/2027).
+context:
+  text: >-
+    Você está assessorando o Comitê de Investimentos em TIC da Aurora Energia S.A. na reunião de
+    08/10/2026. A DFI impôs teto inegociável de R$ 58 MM. A carteira candidata demanda R$ 89,3 MM.
+    F2 e F5 são tecnicamente inviáveis sem F4. O prazo de cibersegurança OT (F1) é 31/12/2027 sob
+    auditoria regulatória da ANP. O contrato da TecMar morre em 31/01/2027 e a sustentação F6 nunca
+    teve linha orçamentária própria.
+  artifacts:
+    - case_horizonte_digital.md
+    - politica_decisao_horizonte_2027.md
+    - glossario.md
+orchestrators:
+  count: 2
+  agents:
+    - id: relator-comite
+      role: primary
+      model: "gpt-5.6-luna"
+      instructions: >-
+        Crie exatamente uma frente 'governanca-carteira' atribuída ao 'coordenador-governanca'.
+        Crie exatamente três tarefas nessa frente, uma para cada worker, usando estritamente os IDs:
+        'analista-orcamento-contratos', 'analista-viabilidade-tecnica' e 'analista-risco-regulatorio'.
+        Consolide o Parecer Executivo de Recomendação para o Comitê de TIC demonstrando o atendimento
+        integral e rigoroso a todos os requisitos MUST-01 a MUST-10.
+        Para MUST-10: nomeie donos formais (usando os stakeholders da Seção 4: Renata Salgado, Cel. Naves,
+        Larissa Fontoura, Márcio Quaresma) e gatilhos claros de escalonamento para cada item não financiado.
+        Sinalize expressamente o conflito de interesses de Wilson Tagliatti (E&P), que contratou o SaaS
+        paralelo de R$ 3,2 MM/ano por fora e cujo insucesso do programa Horizonte Digital valida sua contratação.
+        No business case, aponte que o piloto foi no FPSO Aurora-12 (afretado/BOT, unidade menos representativa).
+    - id: coordenador-governanca
+      role: coordinator
+      model: "gpt-5.6-luna"
+      instructions: >-
+        Oriente e revise os achados garantindo que nenhum número fure o teto de R$ 58 MM (R$ 31,2 MM
+        comprometido + R$ 26,8 MM discricionário), que MUST-01 a MUST-10 sejam integralmente atendidos
+        (incluindo donos e gatilhos de escalonamento no MUST-10) e que o conflito de interesses de Wilson
+        Tagliatti seja explicitado.
+workers:
+  count: 3
+  agents:
+    - id: analista-orcamento-contratos
+      specialty: >-
+        Inspecione o teto financeiro de R$ 58,0 MM, os R$ 31,2 MM de compromissos contratuais (AVEVA PI,
+        Cognitive APM, TecMar, Cloud Azure, VSAT), opções de renegociação/rescisão, conversão de shelfware
+        com -30% até 30/11/2026, recálculo do business case (R$ 1,8 MM medido no Aurora-12 vs R$ 40 MM prometido,
+        notando que o Aurora-12 afretado é a unidade menos representativa) e donos/gatilhos do MUST-10.
+      model: "gpt-5.6-luna"
+      tools: [document_search, repository_read]
+    - id: analista-viabilidade-tecnica
+      specialty: >-
+        Inspecione as dependências técnicas entre projetos (F4 conectividade LEO/backhaul é pré-requisito
+        para F2 APM e F5 CIO; sensoriamento deficiente em 7 unidades custando R$ 19,3 MM; aditivos de
+        FPSOs afretados de R$ 1,1 MM/unidade; e fitas LTO-5 com erro 3,1% em F3 OSDU separando atraso de perda irreversível).
+      model: "gpt-5.6-luna"
+      tools: [document_search, repository_read]
+    - id: analista-risco-regulatorio
+      specialty: >-
+        Inspecione F1 (remediação ciber OT até 31/12/2027 prazo ANP), a transição do fim da TecMar em
+        31/01/2027 (38 alocados), a necessidade mandatória de sustentação F6 a partir de 01/02/2027 e
+        audite o conflito de interesses de Wilson Tagliatti (E&P) na avaliação do programa frente ao SaaS paralelo.
+      model: "gpt-5.6-luna"
+      tools: [document_search, repository_read]
+execution:
+  max_parallel_workers: 3
+  max_model_calls: 16
+  timeout_seconds: 300
+  worker_timeout_seconds: 120
+  max_retries_per_task: 1
+  on_worker_failure: partial
+  allowed_models: ["gpt-5.6-luna", "gpt-5.6-sol"]
+output:
+  language: pt-BR
+  format: markdown
+  require_evidence: true

@@ -1,0 +1,87 @@
+schema_version: "1"
+run_id: "terminais-cordilheira-q4-2026"
+objective: >-
+  Elaborar o Parecer Técnico Externo da Consultoria para o Conselho de Administração da Terminais
+  Cordilheira S.A. (reunião de 29/09/2026), avaliando o pacote consolidado da Diretoria (DOC-02/DOC-03)
+  e as medidas de emergência do Q4/2026. O parecer deve conter estritamente os 8 itens obrigatórios
+  do Termo de Referência (DOC-00): 1. Afirmações com ID canônico [Cxx] com doc_id e citação literal;
+  2. Decisões ancoradas nos IDs; 3. Afirmações sem consequência; 4. Tabela de alocação por fonte
+  (separando destino de fonte, saldos e sobras para capex, custeio, rubrica 4.7.2, vinculados e físico);
+  5. Cronograma físico por trimestre (berço-dias líquidos: 1.460 - rotina 1.187 - manutenção 51 - projetos 26 = 196);
+  6. Registro de riscos com exposição (R$ MM), dono e gatilho; 7. Veredito individualizado das premissas
+  P1 a P8 (P1 a P3 sustentadas; P4 a P8 quebradas com evidência); 8. Apêndice de cálculo com fórmulas
+  explícitas (conta = resultado). Intimar com data e responsável todos os 5 atos com prazo no Q4/2026
+  (aviso dragagem 9.4 até 31/10; reequilíbrio FLN 6.8 até 31/10; inspeção ACE out/26 antes de 28/11;
+  contrato definitivo NOVAGRO até 30/11; protocolo caução até 18/12; e socorro emergencial do B04).
+context:
+  text: >-
+    Você está assessorando o Conselho de Administração da Terminais Cordilheira S.A. A Diretoria submeteu
+    um pacote consolidado contendo inconsistências graves, ilusões de capacidade agregada e riscos de
+    reprovação sumária: C1 (aprovar pacote sem recálculo), C2 (aceitar 2º ano de descumprimento do arrendamento
+    ANTAQ do B04 sem socorro ou com interdição de 150 dias na safra) e C3 (omitir os atos fatais do Q4/2026).
+    Exige-se cálculo exato, veredito fundamentado das premissas e respeito estrito aos tetos orçamentários.
+  artifacts:
+    - 01_mandato_e_secao1.md
+    - 02_secao2_frentes_propostas.md
+    - 03_secao3_quadro_diretoria_premissas.md
+    - 04_anexos_operacionais_financeiros.md
+    - 05_anexos_regulatorios_tecnicos.md
+orchestrators:
+  count: 2
+  agents:
+    - id: relator-consultoria
+      role: primary
+      model: "gpt-5.6-luna"
+      instructions: >-
+        Crie exatamente uma frente 'parecer-conselho' atribuída ao 'coordenador-governanca-riscos'.
+        Crie exatamente três tarefas nessa frente, uma para cada worker, usando estritamente os IDs:
+        'analista-engenharia-operacoes', 'analista-financas-orcamento' e 'analista-contratos-regulacao'.
+        Consolide o Parecer Técnico Externo completo atendendo obrigatoriamente aos 8 itens do DOC-00,
+        com os 5 atos fatais do Q4/2026 intimados com data e responsável, o veredito individual de P1 a P8
+        (P1–P3 sustentadas, P4–P8 quebradas), cronograma de berço-dias líquidos (196 totais) e o apêndice de cálculo.
+    - id: coordenador-governanca-riscos
+      role: coordinator
+      model: "gpt-5.6-luna"
+      instructions: >-
+        Oriente e revise os achados da frente 'parecer-conselho'.
+        Na etapa de revisão, retorne no campo 'track_id' o valor 'parecer-conselho' e no campo 'accepted_task_ids'
+        estritamente a lista dos IDs das tarefas aceitas presentes em task_results (ex: 'tarefa-engenharia-operacoes',
+        'tarefa-financas-orcamento', 'tarefa-contratos-regulacao'). Jamais coloque IDs de afirmações [Cxx] em accepted_task_ids.
+        Avalie o cumprimento dos gates C1, C2 e C3, a explicitação dos 5 prazos do Q4/2026 e o apêndice de cálculo.
+workers:
+  count: 3
+  agents:
+    - id: analista-engenharia-operacoes
+      specialty: >-
+        Inspecione berços B01–B04, restrições físicas de calado e assoreamento, o sinistro do SH-3 e o socorro
+        emergencial do B04 (locação MHC 100 t para salvar o arrendamento ANTAQ e içar defensores do B02 em jan/27),
+        cronograma de dragagem (janela viável 01/03 a 30/06/2027) e berço-dias por trimestre (196 líquidos no ano).
+      model: "gpt-5.6-luna"
+      tools: [document_search, repository_read]
+    - id: analista-financas-orcamento
+      specialty: >-
+        Inspecione o saldo real de CAPEX (4,2 + baixa PEC-114 de 9,6 = 13,8 MM vs 33,8 comprometido), custeio
+        de 14,0 MM (expurgando 2,35 MM da rubrica compulsória 4.7.2), recursos vinculados da caução TAC (3,2 + 3,9 MM
+        exclusivos para dragagem), covenant DívLíq/EBITDA de 3,25x e apêndice de cálculo com fórmulas (conta = resultado).
+      model: "gpt-5.6-luna"
+      tools: [document_search, repository_read]
+    - id: analista-contratos-regulacao
+      specialty: >-
+        Inspecione os atos com prazo fatal no Q4/2026 (aviso dragagem 9.4 até 31/10; reequilíbrio FLN 6.8 até 31/10;
+        ACE B02 out/26 antes de 28/11 com apólice RC; protocolo caução até 18/12; contrato definitivo NOVAGRO até 30/11),
+        o contrato ANTAQ do B04 e avalie individualmente as premissas P1 a P8 (P1 a P3 sustentadas; P4 a P8 quebradas).
+      model: "gpt-5.6-luna"
+      tools: [document_search, repository_read]
+execution:
+  max_parallel_workers: 3
+  max_model_calls: 26
+  worker_max_turns: 8
+  timeout_seconds: 400
+  worker_timeout_seconds: 180
+  max_retries_per_task: 1
+  on_worker_failure: partial
+  allowed_models: ["gpt-5.6-luna", "gpt-5.6-sol"]
+output:
+  language: pt-BR
+  format: markdown
+  require_evidence: true

@@ -1,0 +1,66 @@
+schema_version: "1"
+run_id: "due-diligence-contrato-saas"
+objective: >-
+  Auditar a minuta do contrato B2B SaaS (minuta_contrato_saas.txt) defendendo os interesses
+  da CONTRATANTE. Identificar cláusulas abusivas, desequilíbrio contratual, riscos patrimoniais,
+  operacionais e regulatórios (LGPD), classificando a severidade e propondo a redação revisada
+  para renegociação.
+context:
+  text: >-
+    Nossa empresa é a CONTRATANTE. O contrato foi enviado pela fornecedora e apresenta fortes
+    assimetrias. Avalie com rigor a exposição a multas, responsabilidade civil, retenção de dados,
+    privacidade e continuidade operacional.
+  artifacts:
+    - minuta_contrato_saas.txt
+orchestrators:
+  count: 2
+  agents:
+    - id: principal
+      role: primary
+      model: "gpt-5.6-luna"
+      instructions: >-
+        Crie exatamente uma frente 'frente-juridica' atribuída ao 'coordenador-juridico'.
+        Crie exatamente três tarefas nessa frente, uma para cada worker, usando estritamente os IDs:
+        'auditor-rescisao-vigencia', 'auditor-responsabilidade-sla' e 'auditor-dados-privacidade'.
+        Consolide uma Matriz de Riscos Executiva (Alta / Média / Baixa) com cláusula, linha,
+        impacto prático e proposta de contra-redação para o jurídico negociar.
+    - id: coordenador-juridico
+      role: coordinator
+      model: "gpt-5.6-luna"
+      instructions: >-
+        Oriente os auditores a fundamentarem cada achado citando obrigatoriamente a cláusula e a linha
+        correspondente do texto. Rejeite apontamentos genéricos ou sem respaldo documental.
+workers:
+  count: 3
+  agents:
+    - id: auditor-rescisao-vigencia
+      specialty: >-
+        Inspecione a Cláusula 2 (vigência, renovação automática de 36 meses, multas de 100% por rescisão
+        e assimetria de prazos) e a Cláusula 7 (custos e foro/arbitragem internacional em Miami).
+      model: "gpt-5.6-luna"
+      tools: [document_search, repository_read]
+    - id: auditor-responsabilidade-sla
+      specialty: >-
+        Inspecione a Cláusula 3 (SLA baixo de 95%, ausência de rescisão motivada e créditos inócuos)
+        e a Cláusula 4 (liability cap de apenas 1 mensalidade para a fornecedora e responsabilidade
+        ilimitada para a CONTRATANTE).
+      model: "gpt-5.6-luna"
+      tools: [document_search, repository_read]
+    - id: auditor-dados-privacidade
+      specialty: >-
+        Inspecione a Cláusula 5 (uso indevido de dados para treino de IA e monetização, suboperadores
+        sem autorização e prazo abusivo de 30 dias para notificar incidentes de segurança sob a LGPD).
+      model: "gpt-5.6-luna"
+      tools: [document_search, repository_read]
+execution:
+  max_parallel_workers: 3
+  max_model_calls: 16
+  timeout_seconds: 300
+  worker_timeout_seconds: 120
+  max_retries_per_task: 1
+  on_worker_failure: partial
+  allowed_models: ["gpt-5.6-luna", "gpt-5.6-sol"]
+output:
+  language: pt-BR
+  format: markdown
+  require_evidence: true

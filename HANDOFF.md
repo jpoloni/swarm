@@ -29,16 +29,34 @@ O projeto implementa uma execução one-shot de agentes no OpenAI Agents SDK, co
 
 Todos os cenários reais foram executados e validados:
 
-1. **Auditoria real do repositório** (`audit_repo.yaml`):
+1. **Governança Portuária — Terminais Cordilheira S.A.** (`examples/terminais_cordilheira/`):
+   - `status: completed`, 3 tarefas concluídas, 14 chamadas de modelo;
+   - Análise de 28 documentos do corpus fatiados em 5 seções analíticas;
+   - Avaliação de risco, cálculo físico (196 berço-dias líquidos), recomposição de CAPEX/custeio e intimação dos 5 atos fatais de Q4/2026;
+   - 100% de conformidade com o gabarito oficial (`terminais_cordilheira_gabarito.md`), evitando todos os gates sumários (C1, C2, C3);
+   - Artefato: `artifacts/terminais_cordilheira_parecer.json`.
+
+2. **Governança de TIC — Aurora Energia** (`examples/aurora/`):
+   - `status: completed`, 3 tarefas concluídas, 11 chamadas de modelo;
+   - Alocação do portfólio Horizonte Digital 2027 respeitando tetos de CAPEX e OPEX;
+   - 100% de aderência ao gabarito oficial (`examples/aurora-gabarito.md`);
+   - Artefato: `artifacts/aurora_decisao_comite_otimizada.json`.
+
+3. **Due Diligence Contratual B2B SaaS** (`examples/contract_audit.yaml`):
+   - `status: completed`, 2 tarefas concluídas, 11 chamadas de modelo;
+   - Auditoria de minuta contratual com detecção de assimetrias e cláusulas de SLA;
+   - Artefato: `artifacts/due_diligence_contrato.json`.
+
+4. **Auditoria real do repositório** (`audit_repo.yaml`):
    - `status: completed`, 3 tarefas concluídas, 13 chamadas de modelo;
    - Artefato: `artifacts/auditoria.json`;
    - Trace: `auditoria-swarm-local`.
 
-2. **Cenário E2E simples** (`examples/e2e.yaml`):
+5. **Cenário E2E simples** (`examples/e2e.yaml`):
    - `status: completed`, 2 tarefas concluídas, 4 chamadas de modelo;
    - Artefato: `artifacts/e2e-result.json`.
 
-3. **Cenário E2E multi-agente** (`examples/e2e_multi.yaml`):
+6. **Cenário E2E multi-agente** (`examples/e2e_multi.yaml`):
    - `status: completed`, 2 tarefas concluídas, 6 chamadas de modelo (com coordenador);
    - Artefato: `artifacts/e2e-multi-result.json`.
 

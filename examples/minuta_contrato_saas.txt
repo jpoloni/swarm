@@ -1,0 +1,41 @@
+CONTRATO DE LICENCIAMENTO DE SOFTWARE COMO SERVIÇO (SAAS) E OUTRAS AVENÇAS
+
+Pelo presente instrumento particular, de um lado:
+FORNECEDORA CLOUD S.A., sociedade empresária inscrita no CNPJ sob o nº 11.222.333/0001-44, com sede em São Paulo/SP, doravante denominada simplesmente "CONTRATADA";
+E, de outro lado:
+EMPRESA CLIENTE LTDA., sociedade empresária inscrita no CNPJ sob o nº 55.666.777/0001-88, com sede em Curitiba/PR, doravante denominada simplesmente "CONTRATANTE";
+
+Resolvem celebrar o presente Contrato mediante as cláusulas e condições a seguir:
+
+CLÁUSULA 1 - DO OBJETO
+1.1. O presente Contrato tem por objeto a concessão de licença de uso temporária, não exclusiva e intransferível da plataforma de software SaaS "Enterprise Cloud Hub", bem como a prestação dos serviços de hospedagem e suporte técnico correlatos.
+
+CLÁUSULA 2 - DA VIGÊNCIA, RENOVAÇÃO E RESCISÃO
+2.1. O presente contrato vigorará pelo prazo improrrogável de 36 (trinta e seis) meses a contar da data de assinatura.
+2.2. A renovação do Contrato ocorrerá de forma automática por períodos iguais e sucessivos de 36 meses, a menos que a CONTRATANTE notifique a CONTRATADA expressamente com antecedência mínima de 120 (cento e vinte) dias antes do término do período vigente.
+2.3. Em caso de rescisão antecipada e imotivada por iniciativa da CONTRATANTE, esta deverá pagar à CONTRATADA multa compensatória e irrevogável no valor equivalente a 100% (cem por cento) de todas as mensalidades restantes até o término dos 36 meses contratados.
+2.4. A CONTRATADA poderá rescindir o contrato imotivadamente a qualquer tempo mediante aviso prévio de apenas 15 (quinze) dias, sem incidência de qualquer penalidade ou dever de indenizar.
+
+CLÁUSULA 3 - DO NÍVEL DE SERVIÇO (SLA) E SUPORTE
+3.1. A CONTRATADA envidará melhores esforços comerciais para manter a disponibilidade mensal da plataforma em 95% (noventa e cinco por cento).
+3.2. Manutenções programadas ou paradas técnicas extraordinárias não serão computadas para fins de cálculo do índice de disponibilidade.
+3.3. Em caso de descumprimento do índice de disponibilidade acima, o único e exclusivo remédio jurídico da CONTRATANTE será o recebimento de crédito de 5% (cinco por cento) sobre a mensalidade do respectivo mês, vedada a rescisão motivada por falha recorrente de serviço.
+
+CLÁUSULA 4 - DA LIMITAÇÃO DE RESPONSABILIDADE E INDENIZAÇÃO
+4.1. Em nenhuma hipótese a responsabilidade acumulada total da CONTRATADA perante a CONTRATANTE, por quaisquer danos diretos, perdas ou prejuízos decorrentes do presente contrato, ultrapassará o valor correspondente à última mensalidade efetivamente paga pela CONTRATANTE.
+4.2. A CONTRATADA não responderá, sob qualquer circunstância, por lucros cessantes, perdas indiretas, danos morais, perda de dados ou interrupção de negócios da CONTRATANTE.
+4.3. A limitação prevista na cláusula 4.1 não se aplica à CONTRATANTE, que responderá de forma ilimitada por quaisquer violações contratuais, perdas e danos ou prejuízos causados à CONTRATADA ou a terceiros.
+
+CLÁUSULA 5 - DA PRIVACIDADE, PROTEÇÃO DE DADOS (LGPD) E SEGURANÇA
+5.1. A CONTRATANTE declara-se controladora dos dados pessoais inseridos na plataforma, competindo à CONTRATADA a função de operadora.
+5.2. A CONTRATADA fica autorizada a contratar livremente quaisquer suboperadores de dados, inclusive sediados no exterior, sem necessidade de notificação prévia ou consentimento da CONTRATANTE.
+5.3. A CONTRATADA poderá coletar, anonimizar e agregar todos os dados comerciais e de transações da CONTRATANTE para fins de treinamento de modelos internos de inteligência artificial e monetização de relatórios de mercado com terceiros.
+5.4. Em caso de incidente de segurança que resulte em vazamento, destruição ou acesso não autorizado a dados pessoais da CONTRATANTE, a CONTRATADA informará a CONTRATANTE no prazo de até 30 (trinta) dias úteis a contar da conclusão das investigações internas da CONTRATADA.
+
+CLÁUSULA 6 - DO PREÇO, PAGAMENTO E REAJUSTE
+6.1. Pelos serviços contratados, a CONTRATANTE pagará à CONTRATADA a mensalidade de R$ 25.000,00 (vinte e cinco mil reais).
+6.2. Os valores serão reajustados anualmente pela variação acumulada do IGP-M ou IPCA, aplicando-se o que for maior, acrescido de spread fixo de 5% (cinco por cento) a título de ganho real.
+6.3. O atraso em qualquer pagamento ensejará aplicação de multa moratória de 10% (dez por cento) e juros de 2% (dois por cento) ao mês.
+
+CLÁUSULA 7 - DO FORO E RESOLUÇÃO DE CONFLITOS
+7.1. Fica eleita a Câmara de Arbitragem Internacional sediada em Miami, Flórida (EUA), para dirimir quaisquer dúvidas ou litígios oriundos do presente Contrato, sob as regras da AAA, sendo o idioma inglês obrigatório para todos os atos e despesas custeadas integralmente pela parte sucumbente.
