@@ -7,8 +7,8 @@ Estado: robusto, 100% testado (unitários, integração e E2E reais)
 
 - **Primary**: `gpt-5.6-sol` (responsável pelo plano inicial e síntese final);
 - **Coordenadores**: `gpt-5.6-sol` (orientação pré-voo e revisão das frentes);
-- **Workers**: `gpt-5.6-luna` (execução das tarefas e leitura de artefatos);
-- **Allowed models**: `gpt-5.6-sol,gpt-5.6-luna`.
+- **Workers (Oficial)**: `gpt-5.6-terra` (execução das tarefas analíticas e leitura de artefatos);
+- **Allowed models**: `gpt-5.6-sol,gpt-5.6-luna,gpt-5.6-terra`.
 
 ## Entrega atual
 
@@ -29,23 +29,26 @@ O projeto implementa uma execução one-shot de agentes no OpenAI Agents SDK, co
 
 Todos os cenários reais foram executados e validados:
 
-1. **Porto Limiar — TPL (Comitê de Carteira 2027)** (`examples/porto_limiar/`):
+1. **Rede Leste Transmissão S.A. — Rede Sentinela (Comitê Extraordinário de Carteira 2027)** (`examples/rede_sentinela/`):
+   - **Workers GPT 5.6 Terra (Oficial)**: `status: completed`, 10 chamadas, 72.8s. Execução 100% cega: atendeu integralmente MUST-01 a MUST-10, acertou 9/9 deliberações de frentes (F1, F2, F6, F7, F9 aprovadas; F4, F8 diferidas; F3 e F5 rejeitadas), 8/8 premissas P1 a P8 (P1-P5 refutadas, P6-P8 sustentadas), reconstituição da equação paramétrica do GridStore (24,24 anos de payback real vs 3,69 prometidos, take-or-pay de R$ 144 MM e multa de R$ 85,8 MM), identificação do retorno de R$ 36 MM de Linha Norte II ao CAPEX (totalizando R$ 456 MM) e reconciliação dos 22 bay-dias autorizados pelo ONS. Artefato: `artifacts/sentinela_blind_terra_result.json`.
+
+2. **Porto Limiar — TPL (Comitê de Carteira 2027)** (`examples/porto_limiar/`):
    - **Workers GPT 5.6 Terra**: `status: completed`, 10 chamadas, 61.1s. Reconstituiu a fórmula paramétrica do payback de F5 (TurnGate) provando 24,5 anos reais (vs 3,4 anos prometidos), reconciliação do fluxo de CAPEX (R$ 178 MM com baixa de Armazém Norte) e OPEX compulsório de F2/F9. Artefato: `artifacts/porto_limiar_blind_terra_result.json`.
    - **Workers GPT 5.6 Luna**: `status: completed`, 14 chamadas, 51.9s. 100% cego, 9/9 deliberações de frentes coincidentes com o gabarito. Artefato: `artifacts/porto_limiar_blind_result.json`.
 
-2. **Governança Portuária — Terminais Cordilheira S.A.** (`examples/terminais_cordilheira/`):
+3. **Governança Portuária — Terminais Cordilheira S.A.** (`examples/terminais_cordilheira/`):
    - **Workers GPT 5.6 Terra**: `status: completed`, 13 chamadas, 88.7s. Nota estimada **~87,5/100**. Encontrou o cancelamento do PEC-114 (+R$ 9,6 MM de CAPEX, totalizando R$ 13,8 MM), a exigência de SFCE da norma NE-31 (R$ 3,1 MM CAPEX + R$ 0,58 MM/ano) e a fórmula exata da recuperação de caução (`1,95 × 2,10 × (1 - 0,22) ≈ 3,2 MM`). Artefato: `artifacts/terminais_cordilheira_blind_terra_result.json`.
    - **Workers GPT 5.6 Luna**: `status: completed`, 13 chamadas, 58.9s. Nota estimada **78,5/100**, superando com folga todos os gates sumários (C1, C2 e C3) e gabaritando as premissas P1–P8. Artefato: `artifacts/terminais_cordilheira_blind_result.json`.
 
-3. **Governança de TIC — Aurora Energia** (`examples/aurora/`):
+4. **Governança de TIC — Aurora Energia** (`examples/aurora/`):
    - **Workers GPT 5.6 Terra**: `status: completed`, 10 chamadas, 45.9s. Execução 100% cega: sem nenhuma dica no YAML, atendeu rigorosamente MUST-01 a MUST-10, isolou o déficit de R$ 4,0 MM em F6, diagnosticou o viés do piloto no Aurora-12, a sobreposição do SaaS paralelo de R$ 3,2 MM e determinou os donos e gatilhos de escalonamento. Artefato: `artifacts/aurora_blind_terra_result.json`.
    - **Workers GPT 5.6 Luna**: `status: completed`, 11 chamadas, 42.1s. 100% de aderência ao gabarito oficial. Artefato: `artifacts/aurora_decisao_comite_otimizada.json`.
 
-4. **Due Diligence Contratual B2B SaaS** (`examples/contract_audit.yaml`):
+5. **Due Diligence Contratual B2B SaaS** (`examples/contract_audit.yaml`):
    - **Workers GPT 5.6 Terra**: `status: completed`, 13 chamadas, 40.0s. Execução 100% cega: sem qualquer menção prévia a números de cláusulas, mapeou e fundamentou autonomamente todas as cláusulas (2.1-2.4, 3.1-3.3, 4.1-4.3, 5.2-5.4 e 7.1), calculou o lock-in de R$ 900.000,00 e converteu a assimetria de SLA de 95% em 36h/mês de indisponibilidade. Artefato: `artifacts/contract_audit_blind_terra_result.json`.
    - **Workers GPT 5.6 Luna**: `status: completed`, 11 chamadas, 37.5s. Matriz de riscos e contra-redações. Artefato: `artifacts/due_diligence_contrato.json`.
 
-4. **Auditoria real do repositório** (`audit_repo.yaml`):
+6. **Auditoria real do repositório** (`audit_repo.yaml`):
    - `status: completed`, 3 tarefas concluídas, 13 chamadas de modelo;
    - Artefato: `artifacts/auditoria.json`;
    - Trace: `auditoria-swarm-local`.

@@ -1,0 +1,97 @@
+schema_version: "1"
+run_id: "rede-sentinela-carteira-2027-blind-terra"
+objective: >-
+  Elaborar o Parecer Executivo de Governança e Decisão de Carteira independente para o Comitê Extraordinário
+  de Carteira 2027 da Rede Leste Transmissão S.A. (RLT), avaliando o pacote proposto pela Diretoria (DOC-07), suas premissas
+  (P1 a P8) e cada uma das frentes (F1 a F9). O parecer deve cumprir rigorosamente os 10 requisitos obrigatórios
+  do Mandato do Conselho:
+  1. Catálogo de afirmações [Cxx], doc_id, localização e citação literal (MUST-01);
+  2. Decisões ancoradas nos IDs das afirmações (MUST-02);
+  3. Afirmações sem consequência decisória com justificativa (MUST-03);
+  4. Alocação por fonte/entidade, separando tipo_linha: item | sub_item | fonte | total | saldo (MUST-04);
+  5. Cronograma físico trimestral de desligamentos ONS: capacidade, rotina, projetos e saldo (MUST-05);
+  6. Registro de riscos com exposição, fórmula, dono e gatilho de escalonamento (MUST-06);
+  7. Veredito individual de P1 a P8 usando exclusivamente 'sustentada' ou 'refutada', com evidências documentais (MUST-07);
+  8. Apêndice de cálculo refazendo todas as fórmulas no formato 'conta = resultado' (MUST-08);
+  9. Mapa de dependências, ordem obrigatória e janelas operacionais de cada frente (MUST-09);
+  10. Análise de elasticidade: recurso marginal, quantidade e gatilho verificável (MUST-10).
+context:
+  text: >-
+    Você atua na assessoria executiva independente do Comitê Extraordinário de Carteira 2027 da Rede Leste Transmissão S.A. (RLT).
+    O Conselho determinou uma deliberação única sobre as frentes F1 a F9, priorizando segurança, continuidade da concessão,
+    preservação de direitos de acesso e modernização sem criar dívida nova nem romper covenants.
+    O parecer deve usar exclusivamente as evidências deste corpus documental, sem presumir waivers, subestação substituta,
+    equipe adicional, janela do ONS ou financiamentos não documentados. Audite com profundidade e rigor técnico todos
+    os documentos anexos (DOC-01 a DOC-07 e ANX-01 a ANX-10), recalculando os totais de forma autônoma.
+  artifacts:
+    - 01_mandato_e_secao1.md
+    - 02_secao2_frentes_propostas.md
+    - 03_secao3_recomendacao_diretoria_premissas.md
+    - 04_anexos.md
+orchestrators:
+  count: 2
+  agents:
+    - id: relator-comite
+      role: primary
+      model: "gpt-5.6-luna"
+      instructions: >-
+        Crie exatamente uma frente 'decisao-carteira' atribuída ao 'coordenador-carteira'.
+        Crie exatamente três tarefas nessa frente, uma para cada analista, usando estritamente os IDs:
+        'analista-engenharia-operacao', 'analista-financas-orcamento' e 'analista-regulatorio-riscos'.
+        Consolide os achados dos três analistas em um Parecer Executivo completo, independente e conclusivo,
+        atendendo rigorosamente aos 10 requisitos mandatórios do Mandato do Conselho (MUST-01 a MUST-10),
+        com deliberações justificadas por frente, cronograma trimestral ONS, mapa de dependências e apêndice de cálculos explícito.
+    - id: coordenador-carteira
+      role: coordinator
+      model: "gpt-5.6-luna"
+      instructions: >-
+        Oriente os analistas a auditarem criticamente os documentos de suas respectivas áreas e cruze os achados
+        para garantir coerência entre capacidade física de subestações/desligamentos ONS, restrições financeiras/contas vinculadas
+        e exigências regulatórias/ambientais.
+        Na etapa de revisão, retorne no campo 'track_id' o valor 'decisao-carteira' e no campo 'accepted_task_ids'
+        estritamente a lista dos IDs das tarefas aceitas presentes em task_results (ex: 'tarefa-engenharia-operacao',
+        'tarefa-financas-orcamento', 'tarefa-regulatorio-riscos'). Jamais coloque IDs de afirmações [Cxx] em accepted_task_ids.
+        Assegure que os requisitos MUST-01 a MUST-10 e premissas P1 a P8 foram integralmente cobertos com evidências documentais.
+workers:
+  count: 3
+  agents:
+    - id: analista-engenharia-operacao
+      specialty: >-
+        Audite as condições técnicas e físico-operacionais da RLT (DOC-01, DOC-06, ANX-08 e frentes F1 a F9).
+        Analise a capacidade instalada das subestações e bancos de transformação; os limites anuais (96 bay-dias) e
+        trimestrais (28 bay-dias) autorizados pelo ONS frente à rotina de manutenção obrigatória (74 bay-dias); a duração,
+        janelas operacionais e métodos construtivos de cada projeto; verifique a viabilidade de desligamentos simultâneos
+        e mapeie as dependências técnicas e operacionais entre as frentes.
+      model: "gpt-5.6-terra"
+      tools: [document_search, repository_read]
+    - id: analista-financas-orcamento
+      specialty: >-
+        Audite o orçamento, finanças e covenants da carteira (DOC-02, DOC-03, DOC-04, DOC-05, DOC-07, ANX-09, ANX-10).
+        Recalcule a autorização real de CAPEX e o teto de OPEX incremental frente às regras da Política Financeira PF-31
+        (destinação de custos de segurança crítica e conformidade ambiental); audite as contas vinculadas (C1, C2, C3),
+        seus prazos, condições e histórico de recuperação; teste o covenant Dívida Líquida/EBITDA de 3,20x; audite termos
+        econômico-financeiros contratuais (take-or-pay, multas rescisórias); elabore o apêndice de cálculos e a análise de elasticidade.
+      model: "gpt-5.6-terra"
+      tools: [document_search, repository_read]
+    - id: analista-regulatorio-riscos
+      specialty: >-
+        Audite as obrigações regulatórias, conformidade ambiental, cibersegurança e matriz de riscos (DOC-01, DOC-04, DOC-05,
+        ANX-01 a ANX-07, ANX-09 e frentes F1, F2, F4, F6, F7, F8, F9). Avalie a Resolução ANEEL 1.044/2026, licenças e
+        sentenças ambientais, regras do Contrato CUST-14 de acesso e termos de suporte do SCADA Guardião (Cláusula 16.3);
+        confronte as premissas P1 a P8 da Diretoria com as evidências do texto e estruture o registro de riscos com
+        exposição financeira, fórmula, dono formal e gatilho de escalonamento.
+      model: "gpt-5.6-terra"
+      tools: [document_search, repository_read]
+execution:
+  max_parallel_workers: 3
+  max_model_calls: 32
+  worker_max_turns: 8
+  timeout_seconds: 420
+  worker_timeout_seconds: 180
+  max_retries_per_task: 1
+  on_worker_failure: partial
+  allowed_models: ["gpt-5.6-luna", "gpt-5.6-sol", "gpt-5.6-terra"]
+output:
+  language: pt-BR
+  format: markdown
+  require_evidence: true
