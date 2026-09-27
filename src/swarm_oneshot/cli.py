@@ -10,10 +10,9 @@ import sys
 from pathlib import Path
 
 import yaml
-from dotenv import load_dotenv
 from pydantic import ValidationError
 
-from .env_config import apply_env_overrides
+from .env_config import apply_env_overrides, load_project_env, missing_api_key_message
 from .models import SwarmConfig
 from .orchestrator import Swarm
 from .progress import Progress
@@ -35,7 +34,8 @@ def load_config(path: Path, *, apply_env: bool = False) -> SwarmConfig:
 
 
 def main() -> int:
-    load_dotenv(Path.cwd() / ".env", override=False)
+    env_path = Path.cwd() / ".env"
+    load_project_env(env_path)
     parser = argparse.ArgumentParser(prog="swarm-oneshot")
     sub = parser.add_subparsers(dest="command", required=True)
     validate = sub.add_parser("validate", help="validar configuração sem chamar a API")
@@ -66,13 +66,16 @@ def main() -> int:
     if args.command == "validate":
         print(f"Configuração válida: {config.run_id} · {config.orchestrators.count} orquestrador(es) · {config.workers.count} worker(s)")
         return 0
-    if not os.environ.get("OPENAI_API_KEY"):
-        print("OPENAI_API_KEY ausente. Defina a variável para executar o teste com a API.", file=sys.stderr)
+    if not (os.environ.get("OPENAI_API_KEY") or "").strip():
+        print(missing_api_key_message(env_path), file=sys.stderr)
         return 2
     result = asyncio.run(Swarm(config, base_dir=config_path.parent, progress=Progress(width=width)).run())
-    assert output_path is not None
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text(json.dumps(result.model_dump(), ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    try:
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path.write_text(json.dumps(result.model_dump(), ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    except OSError as exc:
+        print(f"Erro ao salvar resultado em {output_path}: {exc}", file=sys.stderr)
+        return 1
     print(f"Resultado: {output_path} · status={result.status} · chamadas={result.usage.model_calls}")
     return 0 if result.status == "completed" else 1
 

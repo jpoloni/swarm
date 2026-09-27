@@ -1,0 +1,68 @@
+schema_version: "1"
+run_id: "auditoria-swarm-local"
+objective: >-
+  Auditar a prontidão deste projeto para executar o swarm com API real.
+  Identifique até cinco riscos concretos de configuração, orquestração ou testes,
+  priorize por impacto e proponha a menor correção verificável para cada um.
+context:
+  text: >-
+    Os arquivos listados são o código real deste projeto. Use somente esses arquivos
+    como evidência. Cite caminho e linha. Não leia arquivos de credenciais. Se não
+    encontrar um problema verificável, informe isso em vez de inventar um risco.
+  artifacts:
+    - src/swarm_oneshot/cli.py
+    - src/swarm_oneshot/env_config.py
+    - src/swarm_oneshot/orchestrator.py
+    - src/swarm_oneshot/runner.py
+    - scripts/e2e.py
+    - tests/test_swarm.py
+orchestrators:
+  count: 2
+  agents:
+    - id: principal
+      role: primary
+      model: "gpt-5.6-luna"
+      instructions: >-
+        Crie exatamente três tarefas independentes, uma para cada worker.
+        Agrupe configuração e orquestração em frentes próprias e atribua a frente
+        de testes ao coordenador-qualidade. Consolide somente achados citados.
+    - id: coordenador-qualidade
+      role: coordinator
+      model: "gpt-5.6-luna"
+      instructions: >-
+        Antes dos workers, avalie se a frente de testes é viável e oriente a coleta
+        de evidências. Após a execução, rejeite alegações sem caminho e linha.
+workers:
+  count: 3
+  agents:
+    - id: configuracao
+      specialty: >-
+        Revise src/swarm_oneshot/cli.py e src/swarm_oneshot/env_config.py.
+        Avalie precedência de configuração, validação e tratamento de erros.
+      model: "gpt-5.6-luna"
+      tools: [repository_read]
+    - id: orquestracao
+      specialty: >-
+        Revise src/swarm_oneshot/orchestrator.py e src/swarm_oneshot/runner.py.
+        Avalie orçamento, cancelamento, concorrência e estados finais.
+      model: "gpt-5.6-luna"
+      tools: [repository_read]
+    - id: testes
+      specialty: >-
+        Revise scripts/e2e.py e tests/test_swarm.py.
+        Identifique lacunas concretas entre testes locais e execução real.
+      model: "gpt-5.6-luna"
+      tools: [repository_read]
+execution:
+  max_parallel_workers: 3
+  max_model_calls: 32
+  worker_max_turns: 6
+  timeout_seconds: 600
+  worker_timeout_seconds: 180
+  max_retries_per_task: 1
+  on_worker_failure: partial
+  allowed_models: ["gpt-5.6-luna"]
+output:
+  language: pt-BR
+  format: markdown
+  require_evidence: true

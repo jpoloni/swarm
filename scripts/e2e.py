@@ -8,7 +8,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from dotenv import load_dotenv
+from swarm_oneshot.env_config import load_project_env, missing_api_key_message
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -19,9 +19,10 @@ CASES = [
 
 
 def main() -> int:
-    load_dotenv(ROOT / ".env", override=False)
-    if not os.environ.get("OPENAI_API_KEY"):
-        print("Aguardando OPENAI_API_KEY. Nenhuma chamada à API foi feita.", file=sys.stderr)
+    env_path = ROOT / ".env"
+    load_project_env(env_path)
+    if not (os.environ.get("OPENAI_API_KEY") or "").strip():
+        print(missing_api_key_message(env_path), file=sys.stderr)
         return 2
     for config, output, run_id, agents in CASES:
         process = subprocess.run(
@@ -30,7 +31,11 @@ def main() -> int:
             check=False,
         )
         if process.returncode:
+            print(f"Execução falhou para {config.name} com código {process.returncode}", file=sys.stderr)
             return process.returncode
+        if not output.is_file():
+            print(f"Arquivo de saída esperado não foi gerado: {output}", file=sys.stderr)
+            return 1
         content = output.read_text(encoding="utf-8")
         data = json.loads(content)
         assert data["run_id"] == run_id, data

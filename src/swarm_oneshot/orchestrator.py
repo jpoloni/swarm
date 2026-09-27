@@ -14,6 +14,7 @@ from .models import (
 )
 from .progress import Progress
 from .runner import OpenAIAgentRunner
+from .sanitize import sanitize_result
 from .tools import build_tools
 from .validation import PlanError, validate_plan
 
@@ -39,7 +40,7 @@ class CallBudget:
 
     async def refund(self, reserved: int, actual: int) -> None:
         async with self._lock:
-            self.used -= max(reserved - max(actual, 1), 0)
+            self.used -= max(reserved - max(actual, 0), 0)
 
 
 def payload(value: Any) -> str:
@@ -126,13 +127,17 @@ class Swarm:
     ) -> Any:
         reserved = await self.budget.reserve(turns, final=final)
         self.agent_models[agent_id] = model
-        result = await self.runner.run(
-            agent_id=agent_id, model=model, instructions=instructions,
-            prompt=prompt, output_type=output_type, tools=tools,
-            max_turns=reserved,
-        )
-        await self.budget.refund(reserved, result.model_calls)
-        return result.output
+        calls_made = 0
+        try:
+            result = await self.runner.run(
+                agent_id=agent_id, model=model, instructions=instructions,
+                prompt=prompt, output_type=output_type, tools=tools,
+                max_turns=reserved,
+            )
+            calls_made = getattr(result, "model_calls", 1)
+            return result.output
+        finally:
+            await self.budget.refund(reserved, calls_made)
 
     async def _prepare_tracks(self, plan: Plan) -> None:
         coordinators = {a.id: a for a in self.config.orchestrators.agents if a.role == "coordinator"}
@@ -145,8 +150,8 @@ class Swarm:
             tasks = [task for task in plan.tasks if task.track_id == track.id]
             guidance: TrackGuidance = await self._call(
                 coordinator.id, coordinator.model,
-                coordinator.instructions + " Oriente os workers desta frente antes da execução.",
-                payload({"objective": self.config.objective, "context": self.config.context.model_dump(), "track": track.model_dump(), "tasks": [task.model_dump() for task in tasks]}),
+                coordinator.instructions + " Oriente os workers desta frente antes da execução. Nesta etapa, avalie apenas escopo e viabilidade das tarefas: ainda não há achados para citar ou revisar. Se as tarefas forem viáveis, aprove a frente e peça aos workers as evidências necessárias. Não rejeite a frente por ausência de evidências que serão produzidas pelos workers.",
+                payload({"objective": self.config.objective, "context": self.config.context.model_dump(), "track": track.model_dump(), "tasks": [task.model_dump() for task in tasks], "stage": "preparação antes da execução dos workers"}),
                 TrackGuidance, [], 1,
             )
             task_ids = {task.id for task in tasks}
@@ -154,8 +159,9 @@ class Swarm:
             if guidance.track_id != track.id or not set(instruction_ids).issubset(task_ids) or len(instruction_ids) != len(set(instruction_ids)):
                 raise PlanError(f"orientação inválida para a frente {track.id}")
             if not guidance.approved:
-                raise PlanError(f"frente {track.id} rejeitada: {'; '.join(guidance.issues)}")
-            self.guidance[track.id] = guidance
+                self.limitations.append(f"Orientação da frente {track.id} não aprovada: {'; '.join(guidance.issues) or 'sem justificativa'}")
+            else:
+                self.guidance[track.id] = guidance
             self.progress.set("coordenação", number, len(assigned))
 
     async def _execute_tasks(self, plan: Plan) -> None:
@@ -178,7 +184,7 @@ class Swarm:
                     "rule": "Entregue apenas fatos sustentados pelos dados disponíveis. Use o task_id recebido. Se não puder concluir, status=failed e descreva a lacuna.",
                 })
                 tools = build_tools(worker.tools, self.base_dir, self.config.context.artifacts) if worker.tools else []
-                turns = 3 if tools else 1
+                turns = self.config.execution.worker_max_turns if tools else 1
                 last_error = "falha desconhecida"
                 for attempt in range(self.config.execution.max_retries_per_task + 1):
                     try:
@@ -307,7 +313,7 @@ class Swarm:
         return self._result(status, answer, [], [])
 
     def _result(self, status: str, answer: str, evidence: list[str], limitations: list[str]) -> FinalResult:
-        return FinalResult(
+        result = FinalResult(
             run_id=self.config.run_id,
             status=status,
             answer=answer,
@@ -319,3 +325,4 @@ class Swarm:
             agent_models=self.agent_models,
             trace_ref=self.config.run_id if isinstance(self.runner, OpenAIAgentRunner) else None,
         )
+        return sanitize_result(result)

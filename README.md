@@ -1,6 +1,6 @@
 # Swarm one-shot
 
-Aplicação CLI para executar um objetivo específico com orquestradores e workers configuráveis no OpenAI Agents SDK. A [spec](SPEC.md), o [plano de implementação](IMPLEMENTATION_PLAN.md), o [plano E2E](TEST_PLAN_E2E.md) e o [progresso](PROGRESS.md) documentam os contratos, critérios de aceite e estado.
+Aplicação CLI para executar um objetivo específico com orquestradores e workers configuráveis no OpenAI Agents SDK. A [spec](SPEC.md), o [plano de implementação](IMPLEMENTATION_PLAN.md), o [plano E2E](TEST_PLAN_E2E.md), o [progresso](PROGRESS.md) e o [handoff](HANDOFF.md) documentam os contratos, critérios de aceite e estado.
 
 ## Instalação
 
@@ -36,6 +36,18 @@ Para uma configuração própria:
 venv/bin/python -m swarm_oneshot run --config minha-config.yaml --output artifacts/resultado.json
 ```
 
+## Caso real: auditoria deste projeto
+
+O arquivo [audit_repo.yaml](audit_repo.yaml) usa três workers para revisar configuração, orquestração e testes do próprio código, com um coordenador responsável pela frente de qualidade. As ferramentas só podem ler os arquivos declarados em `context.artifacts`; `.env` não está nessa lista. A resposta deve citar caminho e linha para cada achado.
+
+```sh
+venv/bin/python -m swarm_oneshot validate --config audit_repo.yaml --no-env-overrides
+venv/bin/python -m swarm_oneshot run --config audit_repo.yaml --output artifacts/auditoria.json --no-env-overrides
+```
+
+O segundo comando usa a chave do `.env` e faz chamadas reais à API. O resultado fica em `artifacts/auditoria.json`.
+Nesta auditoria, `worker_max_turns: 6` permite várias leituras de arquivos por worker; `max_model_calls: 32` limita o orçamento total. Um worker que exceder os turnos ou não concluir aparece em `incomplete_tasks` e pode produzir `status: partial` quando outras tarefas terminam.
+
 A CLI imprime barras por fase em `stderr` e grava o contrato final em JSON. O exemplo usa `gpt-5.6-luna`; ajuste os modelos do `.env` e `SWARM_ALLOWED_MODELS` caso sua conta use outros IDs. `allowed_models` é um catálogo local opcional, não uma consulta de disponibilidade da API. Variáveis exportadas no shell têm prioridade sobre o `.env`.
 
 ## Estrutura
@@ -44,7 +56,7 @@ A CLI imprime barras por fase em `stderr` e grava o contrato final em JSON. O ex
 - `src/swarm_oneshot/validation.py`: validação determinística do plano.
 - `src/swarm_oneshot/orchestrator.py`: agendamento, orçamento, revisão e síntese.
 - `src/swarm_oneshot/runner.py`: integração com o Agents SDK.
-- `src/swarm_oneshot/tools.py`: ferramentas de leitura de artefatos locais.
+- `src/swarm_oneshot/tools.py`: ferramentas de leitura restritas aos artefatos declarados.
 - `scripts/e2e.py`: verificação real da API, condicionada à chave.
 
 O fluxo não guarda memória entre execuções. O `run_id` agrupa traces e resultados, mas não retoma uma conversa anterior.

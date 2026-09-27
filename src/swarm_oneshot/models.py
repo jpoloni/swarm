@@ -43,6 +43,7 @@ class WorkerTeam(StrictModel):
 class ExecutionSpec(StrictModel):
     max_parallel_workers: int = Field(ge=1)
     max_model_calls: int = Field(ge=3)
+    worker_max_turns: int = Field(default=3, ge=1)
     timeout_seconds: float = Field(gt=0)
     worker_timeout_seconds: float = Field(gt=0)
     max_retries_per_task: int = Field(ge=0, le=3)

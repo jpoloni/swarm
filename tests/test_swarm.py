@@ -9,13 +9,14 @@ import pytest
 from pydantic import ValidationError
 
 from swarm_oneshot.cli import load_config
-from swarm_oneshot.env_config import apply_env_overrides
+from swarm_oneshot.env_config import apply_env_overrides, load_project_env, missing_api_key_message
 from swarm_oneshot.models import (
     Finding, Plan, ReviewResult, SwarmConfig, Synthesis, Task, TaskInstruction, Track, TrackGuidance, WorkerResult,
 )
 from swarm_oneshot.orchestrator import Swarm
 from swarm_oneshot.progress import Progress
 from swarm_oneshot.runner import AgentRun
+from swarm_oneshot.tools import resolve_allowed_path
 from swarm_oneshot.validation import PlanError, validate_plan
 
 
@@ -28,21 +29,45 @@ def config_data() -> dict:
     return yaml.safe_load(EXAMPLE.read_text(encoding="utf-8"))
 
 
+EXAMPLE_MULTI = Path(__file__).resolve().parents[1] / "examples" / "e2e_multi.yaml"
+
+
 class FakeRunner:
-    def __init__(self, *, dependent: bool = False, fail_worker: str | None = None, coordinator: bool = False) -> None:
+    def __init__(
+        self,
+        *,
+        dependent: bool = False,
+        fail_worker: str | None = None,
+        coordinator: bool = False,
+        coordinator_id: str = "coordenador",
+        reject_guidance: bool = False,
+        fail_attempts: dict[str, int] | None = None,
+        raise_on: set[str] | None = None,
+        leak_secret: str | None = None,
+    ) -> None:
         self.dependent = dependent
         self.fail_worker = fail_worker
         self.coordinator = coordinator
+        self.coordinator_id = coordinator_id
+        self.reject_guidance = reject_guidance
+        self.fail_attempts = fail_attempts or {}
+        self.attempt_counts: dict[str, int] = {}
+        self.raise_on = raise_on or set()
+        self.leak_secret = leak_secret
         self.active_workers = 0
         self.max_active_workers = 0
         self.events: list[str] = []
+        self.turns: dict[str, int] = {}
 
     async def run(self, *, agent_id, model, instructions, prompt, output_type, tools, max_turns):
+        if agent_id in self.raise_on:
+            raise RuntimeError(f"falha simulada em {agent_id}")
         data = json.loads(prompt)
         self.events.append(f"start:{agent_id}")
+        self.turns[agent_id] = max_turns
         if output_type is Plan:
             if self.coordinator:
-                tracks = [Track(id="a", orchestrator_id="principal"), Track(id="b", orchestrator_id="coordenador")]
+                tracks = [Track(id="a", orchestrator_id="principal"), Track(id="b", orchestrator_id=self.coordinator_id)]
             else:
                 tracks = [Track(id="a", orchestrator_id="principal")]
             output = Plan(
@@ -61,18 +86,23 @@ class FakeRunner:
                 assert "end:release-a" in self.events
             await asyncio.sleep(0.01)
             self.active_workers -= 1
+            self.attempt_counts[agent_id] = self.attempt_counts.get(agent_id, 0) + 1
+            attempts_failed = self.fail_attempts.get(agent_id, 0)
+            is_failing = (agent_id == self.fail_worker) or (self.attempt_counts[agent_id] <= attempts_failed)
             output = WorkerResult(
                 task_id=task["id"],
-                status="failed" if agent_id == self.fail_worker else "completed",
-                findings=[] if agent_id == self.fail_worker else [Finding(claim=task["goal"], evidence="nota de versão", impact="ação")],
-                errors=["falha simulada"] if agent_id == self.fail_worker else [],
+                status="failed" if is_failing else "completed",
+                findings=[] if is_failing else [Finding(claim=task["goal"], evidence="nota de versão", impact="ação")],
+                errors=["falha simulada"] if is_failing else [],
             )
         elif output_type is ReviewResult:
             output = ReviewResult(track_id=data["track"]["id"], accepted_task_ids=list(data["task_results"]), summary="Revisado")
         elif output_type is TrackGuidance:
-            output = TrackGuidance(track_id=data["track"]["id"], approved=True, task_instructions=[TaskInstruction(task_id=task["id"], instruction="Use a evidência fornecida.") for task in data["tasks"]])
+            output = TrackGuidance(track_id=data["track"]["id"], approved=not self.reject_guidance, task_instructions=[TaskInstruction(task_id=task["id"], instruction="Use a evidência fornecida.") for task in data["tasks"]], issues=["Faltam citações antes da execução."] if self.reject_guidance else [])
         elif output_type is Synthesis:
-            output = Synthesis(answer="Resumo verificado", evidence=["notas A e B"])
+            answer = f"Resumo com segredo: {self.leak_secret}" if self.leak_secret else "Resumo verificado"
+            evidence = [f"Evidência com {self.leak_secret}"] if self.leak_secret else ["notas A e B"]
+            output = Synthesis(answer=answer, evidence=evidence)
         else:
             raise AssertionError(output_type)
         self.events.append(f"end:{agent_id}")
@@ -124,6 +154,19 @@ def test_coordinator_reviews_its_track():
     assert "revisão        [████████████████████] 1/1" in progress
 
 
+def test_preflight_rejection_does_not_stop_worker_execution():
+    data = config_data()
+    data["orchestrators"]["count"] = 2
+    data["orchestrators"]["agents"].append({"id": "coordenador", "role": "coordinator", "model": "gpt-5.6-luna", "instructions": "Revise a frente."})
+    config = SwarmConfig.model_validate(data)
+    fake = FakeRunner(coordinator=True, reject_guidance=True)
+    result, _ = run_fake(config, fake)
+    assert result.status == "completed"
+    assert result.completed_tasks == ["T1", "T2"]
+    assert "start:release-b" in fake.events
+    assert any("Orientação da frente b não aprovada" in item for item in result.limitations)
+
+
 def test_worker_failure_produces_partial_when_allowed():
     data = config_data()
     data["execution"]["on_worker_failure"] = "partial"
@@ -135,11 +178,31 @@ def test_worker_failure_produces_partial_when_allowed():
     assert "T2" in " ".join(result.limitations)
 
 
-def test_missing_key_exits_before_api_call(monkeypatch):
+def test_tool_worker_uses_configured_turn_limit():
+    data = config_data()
+    data["context"]["artifacts"] = ["e2e.yaml"]
+    data["workers"]["agents"][0]["tools"] = ["repository_read"]
+    data["execution"]["worker_max_turns"] = 6
+    data["execution"]["max_model_calls"] = 12
+    config = SwarmConfig.model_validate(data)
+    fake = FakeRunner()
+    result, _ = run_fake(config, fake)
+    assert result.status == "completed"
+    assert fake.turns["release-a"] == 6
+    assert fake.turns["release-b"] == 1
+
+
+def test_missing_key_exits_before_api_call(tmp_path, monkeypatch):
     from swarm_oneshot import cli
 
+    class DenySwarm:
+        def __init__(self, *args, **kwargs):
+            raise AssertionError("A execução não deve começar sem chave")
+
+    monkeypatch.chdir(tmp_path)
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
-    monkeypatch.setattr("sys.argv", ["swarm-oneshot", "run", "--config", str(EXAMPLE), "--output", "/tmp/no-output.json"])
+    monkeypatch.setattr(cli, "Swarm", DenySwarm)
+    monkeypatch.setattr("sys.argv", ["swarm-oneshot", "run", "--config", str(EXAMPLE), "--output", str(tmp_path / "no-output.json"), "--no-env-overrides"])
     assert cli.main() == 2
 
 
@@ -194,3 +257,156 @@ def test_env_rejects_mismatched_model_list(monkeypatch):
     monkeypatch.setenv("SWARM_WORKER_MODELS", "model-a,model-b")
     with pytest.raises(ValueError, match="requer 1 ou 3 modelos"):
         apply_env_overrides(config_data())
+
+
+def test_env_overrides_worker_turn_limit(monkeypatch):
+    monkeypatch.setenv("SWARM_WORKER_MAX_TURNS", "5")
+    config = SwarmConfig.model_validate(apply_env_overrides(config_data()))
+    assert config.execution.worker_max_turns == 5
+
+
+def test_repository_read_is_limited_to_declared_artifacts(tmp_path):
+    allowed = tmp_path / "code.py"
+    allowed.write_text("print('ok')\n", encoding="utf-8")
+    secret = tmp_path / ".env"
+    secret.write_text("OPENAI_API_KEY=secret\n", encoding="utf-8")
+    assert resolve_allowed_path(tmp_path, ["code.py"], "code.py") == allowed
+    with pytest.raises(ValueError, match="não declarado"):
+        resolve_allowed_path(tmp_path, ["code.py"], ".env")
+    with pytest.raises(ValueError, match="fora"):
+        resolve_allowed_path(tmp_path, ["code.py"], "../outside")
+
+
+def test_env_file_supplies_key_when_shell_value_is_empty(tmp_path, monkeypatch):
+    env_path = tmp_path / ".env"
+    env_path.write_text("OPENAI_API_KEY=test-key\n", encoding="utf-8")
+    monkeypatch.setenv("OPENAI_API_KEY", "")
+    load_project_env(env_path)
+    assert __import__("os").environ["OPENAI_API_KEY"] == "test-key"
+
+
+def test_missing_key_message_identifies_blank_env_file(tmp_path):
+    env_path = tmp_path / ".env"
+    env_path.write_text("OPENAI_API_KEY=\n", encoding="utf-8")
+    assert "está vazia" in missing_api_key_message(env_path)
+
+
+def test_multi_agent_e2e_multi_scenario():
+    config = load_config(EXAMPLE_MULTI, apply_env=False)
+    fake = FakeRunner(coordinator=True, coordinator_id="coordenador-b")
+    result, progress = run_fake(config, fake)
+    assert result.status == "completed"
+    assert result.completed_tasks == ["T1", "T2"]
+    assert result.agent_models == {
+        "principal": "gpt-5.6-luna",
+        "coordenador-b": "gpt-5.6-luna",
+        "release-a": "gpt-5.6-luna",
+        "release-b": "gpt-5.6-luna",
+    }
+    assert "revisão" in progress
+    assert "start:coordenador-b" in fake.events
+
+
+def test_budget_refund_on_worker_retry():
+    data = config_data()
+    data["execution"]["max_model_calls"] = 6
+    data["execution"]["max_retries_per_task"] = 1
+    data["execution"]["worker_max_turns"] = 4
+    config = SwarmConfig.model_validate(data)
+    fake = FakeRunner(fail_attempts={"release-b": 1})
+    result, _ = run_fake(config, fake)
+    assert result.status == "completed"
+    assert result.completed_tasks == ["T1", "T2"]
+    assert result.usage.model_calls == 5
+
+
+def test_budget_refund_on_runner_exception():
+    data = config_data()
+    data["execution"]["max_model_calls"] = 6
+    data["execution"]["on_worker_failure"] = "partial"
+    config = SwarmConfig.model_validate(data)
+    fake = FakeRunner(raise_on={"release-b"})
+    result, _ = run_fake(config, fake)
+    assert result.status == "partial"
+    assert "T1" in result.completed_tasks
+    assert "T2" in result.incomplete_tasks
+    assert result.usage.model_calls == 3
+
+
+def test_secrets_never_appear_in_artifact(monkeypatch):
+    secret_key = "sk-proj-supersecretkey1234567890abcdef"
+    monkeypatch.setenv("OPENAI_API_KEY", secret_key)
+    config = load_config(EXAMPLE, apply_env=False)
+    fake = FakeRunner(leak_secret=secret_key)
+    result, _ = run_fake(config, fake)
+    assert secret_key not in result.answer
+    assert "[REDACTED_KEY]" in result.answer
+    for ev in result.evidence:
+        assert secret_key not in ev
+        assert "[REDACTED_KEY]" in ev
+
+
+def test_cli_full_flow_produces_valid_json_file(tmp_path, monkeypatch):
+    from swarm_oneshot import cli
+
+    out_file = tmp_path / "artifacts" / "cli-result.json"
+    fake = FakeRunner()
+
+    class PatchedSwarm(Swarm):
+        def __init__(self, config, *, base_dir, progress=None):
+            super().__init__(config, base_dir=base_dir, runner=fake, progress=progress)
+
+    monkeypatch.setenv("OPENAI_API_KEY", "test-key-mock")
+    monkeypatch.setattr(cli, "Swarm", PatchedSwarm)
+    monkeypatch.setattr(
+        "sys.argv",
+        ["swarm-oneshot", "run", "--config", str(EXAMPLE), "--output", str(out_file), "--no-env-overrides"],
+    )
+    code = cli.main()
+    assert code == 0
+    assert out_file.is_file()
+    payload = json.loads(out_file.read_text(encoding="utf-8"))
+    assert payload["run_id"] == "e2e-release-notes"
+    assert payload["status"] == "completed"
+    assert payload["completed_tasks"] == ["T1", "T2"]
+    assert payload["usage"]["model_calls"] > 0
+    assert payload["agent_models"]["principal"] == "gpt-5.6-luna"
+
+
+def test_cli_validate_command_succeeds(monkeypatch, capsys):
+    from swarm_oneshot import cli
+
+    monkeypatch.setattr(
+        "sys.argv",
+        ["swarm-oneshot", "validate", "--config", str(EXAMPLE), "--no-env-overrides"],
+    )
+    code = cli.main()
+    assert code == 0
+    captured = capsys.readouterr()
+    assert "Configuração válida" in captured.out
+
+
+def test_cli_fails_on_missing_config_or_output(tmp_path, monkeypatch):
+    from swarm_oneshot import cli
+
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.delenv("SWARM_CONFIG", raising=False)
+    monkeypatch.delenv("SWARM_OUTPUT", raising=False)
+    monkeypatch.setattr("sys.argv", ["swarm-oneshot", "validate"])
+    assert cli.main() == 2
+
+    monkeypatch.setattr("sys.argv", ["swarm-oneshot", "run", "--config", str(EXAMPLE)])
+    assert cli.main() == 2
+
+
+def test_subprocess_cli_handles_errors():
+    import subprocess
+    import sys
+
+    proc = subprocess.run(
+        [sys.executable, "-m", "swarm_oneshot", "run", "--config", "nonexistent.yaml", "--output", "out.json"],
+        capture_output=True,
+        text=True,
+    )
+    assert proc.returncode == 2
+    assert "Configuração inválida" in proc.stderr

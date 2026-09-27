@@ -4,7 +4,28 @@ from __future__ import annotations
 
 import os
 from copy import deepcopy
+from pathlib import Path
 from typing import Any
+
+from dotenv import dotenv_values, load_dotenv
+
+
+def load_project_env(path: Path) -> None:
+    """Load .env while preserving nonempty shell values over file values."""
+    load_dotenv(path, override=False)
+    if not (os.environ.get("OPENAI_API_KEY") or "").strip() and path.is_file():
+        key = (dotenv_values(path).get("OPENAI_API_KEY") or "").strip()
+        if key:
+            os.environ["OPENAI_API_KEY"] = key
+
+
+def missing_api_key_message(path: Path) -> str:
+    if path.is_file():
+        values = dotenv_values(path)
+        if "OPENAI_API_KEY" in values:
+            return f"OPENAI_API_KEY está vazia em {path}. Preencha a linha OPENAI_API_KEY=... e execute novamente."
+        return f"OPENAI_API_KEY não foi definida em {path} nem no ambiente."
+    return f"Arquivo {path} não encontrado e OPENAI_API_KEY ausente no ambiente."
 
 
 def _value(name: str) -> str | None:
@@ -98,6 +119,7 @@ def apply_env_overrides(source: dict[str, Any]) -> dict[str, Any]:
     for env_name, field in (
         ("SWARM_MAX_PARALLEL_WORKERS", "max_parallel_workers"),
         ("SWARM_MAX_MODEL_CALLS", "max_model_calls"),
+        ("SWARM_WORKER_MAX_TURNS", "worker_max_turns"),
         ("SWARM_TIMEOUT_SECONDS", "timeout_seconds"),
         ("SWARM_WORKER_TIMEOUT_SECONDS", "worker_timeout_seconds"),
         ("SWARM_MAX_RETRIES_PER_TASK", "max_retries_per_task"),

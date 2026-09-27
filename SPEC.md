@@ -34,7 +34,7 @@ Orquestrador principal ── validação e síntese ── saída única
 ```
 
 - **Principal:** exatamente um por execução. Define tarefas e critérios de aceite, atribui cada tarefa a um worker e cada frente a um orquestrador, acompanha resultados e produz a resposta final.
-- **Orquestradores auxiliares:** `orchestrators.count - 1`. Cada um orienta sua frente antes da execução, revisa resultados depois e devolve ao principal um resumo estruturado. Não cria workers além do total configurado.
+- **Orquestradores auxiliares:** `orchestrators.count - 1`. Cada um orienta sua frente antes da execução, revisa resultados depois e devolve ao principal um resumo estruturado. A orientação preliminar é consultiva; uma reprovação nessa etapa fica registrada como limitação e não bloqueia os workers. Não cria workers além do total configurado.
 - **Workers:** executam tarefas delimitadas. Cada worker recebe objetivo local, contexto mínimo, ferramentas permitidas, formato de saída e critério de conclusão. Não responde diretamente ao solicitante.
 - **Aplicação hospedeira:** instancia agentes, agenda chamadas paralelas, aplica timeout, mantém IDs, registra estados e impõe orçamento. O principal decide o plano; a aplicação garante os limites.
 
@@ -48,7 +48,7 @@ run_id: "migração-api-2026-09-24"
 objective: "Produzir um plano de migração da API X para a API Y"
 context:
   text: "Documentação, restrições e critérios fornecidos pelo solicitante."
-  artifacts: []
+  artifacts: ["docs/api-x.md", "docs/api-y.md", "src/client.py"]
 
 orchestrators:
   count: 2
@@ -105,6 +105,7 @@ Na CLI de referência, `.env` pode sobrescrever contagens, modelos, limites, obj
 4. Cada agente informa `model` explicitamente. Não há troca silenciosa de modelo em caso de erro.
 5. `1 <= max_parallel_workers <= workers.count`; limites de chamadas e tempo são positivos.
 6. Ferramentas citadas precisam existir no registro da aplicação. Cada agente recebe apenas as ferramentas de sua tarefa.
+   As ferramentas locais de leitura só acessam arquivos listados em `context.artifacts`.
 7. Se o objetivo não puder ser dividido em trabalho útil para os agentes configurados, o principal encerra com `status: rejected` e explica a incompatibilidade, sem inventar subtarefas.
 8. `on_worker_failure` aceita `partial` ou `fail`. Todas as frentes e tarefas planejadas têm um responsável válido; nenhum orquestrador auxiliar fica sem frente.
 
