@@ -1,5 +1,5 @@
 schema_version: "1"
-run_id: "terminais-cordilheira-q4-2026-blind"
+run_id: "terminais-cordilheira-q4-2026-blind-terra"
 objective: >-
   Elaborar o Parecer Técnico Externo independente da Consultoria para o Conselho de Administração
   da Terminais Cordilheira S.A. (reunião de 29/09/2026), avaliando criticamente o pacote consolidado da Diretoria
@@ -58,7 +58,7 @@ workers:
         Analise a situação de calado, assoreamento e capacidade dos berços B01 a B04; o sinistro do SH-3 e as opções
         operacionais para o B04; a viabilidade física e métodos construtivos das frentes de obra propostas (F1 a F9);
         a batimetria e as janelas ambientais/técnicas para dragagem; e calcule a disponibilidade real de berço-dias por trimestre e no ano.
-      model: "gpt-5.6-luna"
+      model: "gpt-5.6-terra"
       tools: [document_search, repository_read]
     - id: analista-financas-orcamento
       specialty: >-
@@ -66,7 +66,7 @@ workers:
         Recalcule a disponibilidade real de recursos em cada fonte (CAPEX, custeio, contingências, recursos vinculados e cauções),
         verifique a conformidade com as políticas corporativas (ex: PO-07) e atas do Conselho, avalie a veracidade das estimativas de ganho
         e despesa das frentes (F1 a F9) e simule os impactos no EBITDA e no cumprimento dos covenants da dívida.
-      model: "gpt-5.6-luna"
+      model: "gpt-5.6-terra"
       tools: [document_search, repository_read]
     - id: analista-contratos-regulacao
       specialty: >-
@@ -74,7 +74,7 @@ workers:
         Analise as cláusulas de desempenho mínimo e riscos de rescisão do arrendamento portuário ANTAQ; contratos comerciais e ferroviários
         (FLN, NOVAGRO); obrigações judiciais e ambientais (TAC/TCP de dragagem); prazos de inspeção regulatória (ACE), seguros e cauções;
         confronte as premissas da Diretoria (P1 a P8) com as obrigações legais e liste todos os prazos críticos e atos inadiáveis.
-      model: "gpt-5.6-luna"
+      model: "gpt-5.6-terra"
       tools: [document_search, repository_read]
 execution:
   max_parallel_workers: 3
@@ -84,7 +84,7 @@ execution:
   worker_timeout_seconds: 180
   max_retries_per_task: 1
   on_worker_failure: partial
-  allowed_models: ["gpt-5.6-luna", "gpt-5.6-sol"]
+  allowed_models: ["gpt-5.6-luna", "gpt-5.6-sol", "gpt-5.6-terra"]
 output:
   language: pt-BR
   format: markdown

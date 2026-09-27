@@ -36,11 +36,9 @@ Todos os cenários reais foram executados e validados:
    - Artefato: `artifacts/porto_limiar_blind_result.json`.
 
 2. **Governança Portuária — Terminais Cordilheira S.A.** (`examples/terminais_cordilheira/`):
-   - `status: completed`, 3 tarefas concluídas, 13 chamadas de modelo em 58.9 segundos;
-   - Execução **100% cega**: zero reprovação sumária (gates C1, C2 e C3 superados);
-   - 100% de acerto nas premissas (P1–P3 sustentadas, P4–P8 contestadas);
-   - Intimação de todos os 5 prazos críticos do Q4/2026 com donos e datas;
-   - Artefato: `artifacts/terminais_cordilheira_blind_result.json`.
+   - Benchmark Cego comparativo entre Workers **GPT 5.6 Luna** vs. **GPT 5.6 Terra**:
+     - **Workers GPT 5.6 Terra**: `status: completed`, 13 chamadas, 88.7s. Nota estimada subiu para **~87,5/100**. Encontrou nos documentos primários o cancelamento do PEC-114 (+R$ 9,6 MM de CAPEX, totalizando R$ 13,8 MM), a exigência de SFCE da norma NE-31 (R$ 3,1 MM CAPEX + R$ 0,58 MM/ano) e a fórmula exata da recuperação de caução (`1,95 × 2,10 × (1 - 0,22) ≈ 3,2 MM`). Artefato: `artifacts/terminais_cordilheira_blind_terra_result.json`.
+     - **Workers GPT 5.6 Luna**: `status: completed`, 13 chamadas, 58.9s. Nota estimada **78,5/100**, superando com folga todos os gates sumários (C1, C2 e C3) e gabaritando as premissas P1–P8. Artefato: `artifacts/terminais_cordilheira_blind_result.json`.
 
 3. **Governança de TIC — Aurora Energia** (`examples/aurora/`):
    - `status: completed`, 3 tarefas concluídas, 11 chamadas de modelo;
