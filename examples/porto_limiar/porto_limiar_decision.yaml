@@ -1,5 +1,5 @@
 schema_version: "1"
-run_id: "porto-limiar-carteira-2027-blind"
+run_id: "porto-limiar-carteira-2027-blind-terra"
 objective: >-
   Elaborar o Parecer Executivo de Governança e Decisão de Carteira independente para o Comitê Extraordinário
   de Carteira 2027 do Terminal Limiar (TPL), avaliando o pacote proposto pela Diretoria (DOC-07), suas premissas
@@ -58,7 +58,7 @@ workers:
         Audite as condições físicas e operacionais do terminal (DOC-01, DOC-06, ANX-03, ANX-07, ANX-08 e frentes F2, F3, F4, F7, F9).
         Analise a capacidade dos berços B1 e B2, portêineres, calado e assoreamento; os limites anuais e trimestrais de interdição
         versus a rotina de atracação obrigatória; os métodos construtivos e durações das intervenções; e a viabilidade do descarte de sedimentos.
-      model: "gpt-5.6-luna"
+      model: "gpt-5.6-terra"
       tools: [document_search, repository_read]
     - id: analista-financas-orcamento
       specialty: >-
@@ -66,7 +66,7 @@ workers:
         Recalcule a autorização real de CAPEX (verificando deliberações sobre cancelamentos como Armazém Norte), teto de OPEX
         e regras da Política Financeira PF-27 para despesas compulsórias de segurança e regulação; audite contas vinculadas (C1, C2, C3);
         teste a aderência ao covenant Dívida Líquida/EBITDA de 3,50x; produza o apêndice de cálculo e a análise de elasticidade.
-      model: "gpt-5.6-luna"
+      model: "gpt-5.6-terra"
       tools: [document_search, repository_read]
     - id: analista-contratos-regulacao
       specialty: >-
@@ -74,7 +74,7 @@ workers:
         Analise o contrato ferroviário RF-11 (regras e riscos de cancelamento de slots), obrigações da Autoridade Portuária e licenças,
         contratos e opções contratuais de software/sistemas (Atlas 7, Nexus Port, TurnGate, PrediCrane); audite o histórico de cauções (C1 a C3);
         confronte as premissas P1 a P8 com as evidências documentais e monte o mapa de dependências.
-      model: "gpt-5.6-luna"
+      model: "gpt-5.6-terra"
       tools: [document_search, repository_read]
 execution:
   max_parallel_workers: 3
@@ -84,7 +84,7 @@ execution:
   worker_timeout_seconds: 180
   max_retries_per_task: 1
   on_worker_failure: partial
-  allowed_models: ["gpt-5.6-luna", "gpt-5.6-sol"]
+  allowed_models: ["gpt-5.6-luna", "gpt-5.6-sol", "gpt-5.6-terra"]
 output:
   language: pt-BR
   format: markdown

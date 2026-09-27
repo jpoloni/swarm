@@ -14,16 +14,19 @@ Atualizado em 2026-09-26 (Sessão 22:40).
 | Configuração `.env` | `██████████` 100% | Integração completa com overrides e proteção contra vazamento |
 | Orçamento de chamadas | `██████████` 100% | Reembolso seguro com `try/finally` em falhas, cancelamentos e retries |
 
-Últimos casos reais validados com API:
-- `examples/terminais_cordilheira/` (Benchmark Cego Luna vs Terra):
-  - **Workers GPT 5.6 Terra**: `artifacts/terminais_cordilheira_blind_terra_result.json`, status `completed` (13 chamadas, 88.7s, nota ~87,5/100, capturou baixa de R$ 9,6 MM do PEC-114, SFCE da NE-31 e fórmula exata de caução).
-  - **Workers GPT 5.6 Luna**: `artifacts/terminais_cordilheira_blind_result.json`, status `completed` (13 chamadas, 58.9s, nota 78,5/100, zero reprovação sumária).
-- `examples/porto_limiar/` → `artifacts/porto_limiar_blind_result.json`, status `completed` (14 chamadas, 100% cego, 9/9 deliberações coincidentes com o gabarito).
-- `examples/aurora/` → `artifacts/aurora_decisao_comite_otimizada.json`, status `completed` (11 chamadas, 100% aderente ao gabarito).
-- `examples/contract_audit.yaml` → `artifacts/due_diligence_contrato.json`, status `completed` (11 chamadas).
-- `audit_repo.yaml` → `artifacts/auditoria.json`, status `completed` (13 chamadas).
-- `examples/e2e.yaml` → `artifacts/e2e-result.json`, status `completed` (4 chamadas).
-- `examples/e2e_multi.yaml` → `artifacts/e2e-multi-result.json`, status `completed` (6 chamadas).
+Últimos casos reais validados com API (Benchmark Luna vs. Terra):
+1. **Terminais Cordilheira S.A. (Conselho de Administração)**:
+   - **Workers GPT 5.6 Terra**: `artifacts/terminais_cordilheira_blind_terra_result.json` (13 chamadas, 88.7s, nota ~87,5/100, detectou baixa de R$ 9,6 MM do PEC-114, SFCE da NE-31 e fórmula da caução).
+   - **Workers GPT 5.6 Luna**: `artifacts/terminais_cordilheira_blind_result.json` (13 chamadas, 58.9s, nota 78,5/100, zero reprovação sumária).
+2. **Porto Limiar — TPL (Comitê de Carteira 2027)**:
+   - **Workers GPT 5.6 Terra**: `artifacts/porto_limiar_blind_terra_result.json` (10 chamadas, 61.1s, 100% cego, reconstituiu fórmula do payback de F5 em 24,5 anos e reconciliação contábil exata ao centavo).
+   - **Workers GPT 5.6 Luna**: `artifacts/porto_limiar_blind_result.json` (14 chamadas, 51.9s, 100% cego, 9/9 deliberações coincidentes).
+3. **Aurora Energia (Comitê de TIC — Horizonte Digital 2027)**:
+   - **Workers GPT 5.6 Terra**: `artifacts/aurora_terra_result.json` (10 chamadas, 45.0s, MUST-01 a MUST-10 com identificação do déficit de R$ 4,0 MM em F6 e recusa formal de Wilson Tagliatti).
+   - **Workers GPT 5.6 Luna**: `artifacts/aurora_decisao_comite_otimizada.json` (11 chamadas, 42.1s, 100% aderente ao gabarito).
+4. **Due Diligence Contratual B2B SaaS**:
+   - **Workers GPT 5.6 Terra**: `artifacts/contract_audit_terra_result.json` (12 chamadas, 41.8s, cálculo de lock-in de R$ 900.000,00 e conversão de SLA para 36h/mês de indisponibilidade).
+   - **Workers GPT 5.6 Luna**: `artifacts/due_diligence_contrato.json` (11 chamadas, 37.5s, matriz executiva completa).
 
 Para repetir os cenários E2E: `venv/bin/python scripts/e2e.py`.
 O handoff operacional atualizado está em [HANDOFF.md](HANDOFF.md).

@@ -1,5 +1,5 @@
 schema_version: "1"
-run_id: "due-diligence-contrato-saas"
+run_id: "due-diligence-contrato-saas-terra"
 objective: >-
   Auditar a minuta do contrato B2B SaaS (minuta_contrato_saas.txt) defendendo os interesses
   da CONTRATANTE. Identificar cláusulas abusivas, desequilíbrio contratual, riscos patrimoniais,
@@ -37,20 +37,20 @@ workers:
       specialty: >-
         Inspecione a Cláusula 2 (vigência, renovação automática de 36 meses, multas de 100% por rescisão
         e assimetria de prazos) e a Cláusula 7 (custos e foro/arbitragem internacional em Miami).
-      model: "gpt-5.6-luna"
+      model: "gpt-5.6-terra"
       tools: [document_search, repository_read]
     - id: auditor-responsabilidade-sla
       specialty: >-
         Inspecione a Cláusula 3 (SLA baixo de 95%, ausência de rescisão motivada e créditos inócuos)
         e a Cláusula 4 (liability cap de apenas 1 mensalidade para a fornecedora e responsabilidade
         ilimitada para a CONTRATANTE).
-      model: "gpt-5.6-luna"
+      model: "gpt-5.6-terra"
       tools: [document_search, repository_read]
     - id: auditor-dados-privacidade
       specialty: >-
         Inspecione a Cláusula 5 (uso indevido de dados para treino de IA e monetização, suboperadores
         sem autorização e prazo abusivo de 30 dias para notificar incidentes de segurança sob a LGPD).
-      model: "gpt-5.6-luna"
+      model: "gpt-5.6-terra"
       tools: [document_search, repository_read]
 execution:
   max_parallel_workers: 3
@@ -59,7 +59,7 @@ execution:
   worker_timeout_seconds: 120
   max_retries_per_task: 1
   on_worker_failure: partial
-  allowed_models: ["gpt-5.6-luna", "gpt-5.6-sol"]
+  allowed_models: ["gpt-5.6-luna", "gpt-5.6-sol", "gpt-5.6-terra"]
 output:
   language: pt-BR
   format: markdown
