@@ -1,19 +1,27 @@
 schema_version: "1"
-run_id: "aurora-horizonte-digital-2027-terra"
+run_id: "aurora-horizonte-digital-2027-blind-terra"
 objective: >-
-  Elaborar o Parecer Executivo de Alocação de Carteira 2027 do Programa Horizonte Digital
-  para o Comitê de TIC da Aurora Energia S.A. Atender obrigatoriamente às diretrizes MUST-01
-  a MUST-10 da política de decisão, respeitando o teto de R$ 58,0 MM (R$ 31,2 MM comprometidos
-  + R$ 26,8 MM discricionários), definindo quais frentes F1 a F6 financiar, o tratamento dos 5
-  contratos existentes, o sequenciamento em janelas de parada (mai/27 e set/27) e a mitigação dos
-  riscos regulatórios (ANP/Auditoria 31/12/2027).
+  Elaborar o Parecer Executivo de Recomendação para o Comitê de Investimentos em TIC da Aurora Energia S.A.
+  (reunião de 08/10/2026), definindo a alocação da carteira 2027 do Programa Horizonte Digital e auditando
+  criticamente as frentes propostas (F1 a F6) e os compromissos contratuais. O parecer deve cumprir rigorosamente
+  as diretrizes mandatórias MUST-01 a MUST-10 da Política de Decisão (DOC-HD-COMITÊ-2026-10):
+  1. Respeitar o teto orçamentário da DFI (discriminando comprometido e discricionário);
+  2. Tratar explicitamente cada um dos cinco compromissos contratuais;
+  3. Declarar e respeitar as dependências técnicas inviabilizantes;
+  4. Endereçar o prazo crítico de auditoria regulatória de cibersegurança OT;
+  5. Endereçar a continuidade operacional pós-vencimento do contrato de fábrica de software;
+  6. Tratar a sustentação dos sistemas em produção (F6);
+  7. Revisar criticamente o business case e o VPL com base em evidências internas;
+  8. Posicionar formalmente a solução paralela contratada pelo E&P;
+  9. Amarrar o cronograma físico às janelas reais de parada offshore;
+  10. Registrar os riscos de todos os itens não financiados com donos formais e critérios claros de escalonamento.
 context:
   text: >-
-    Você está assessorando o Comitê de Investimentos em TIC da Aurora Energia S.A. na reunião de
-    08/10/2026. A DFI impôs teto inegociável de R$ 58 MM. A carteira candidata demanda R$ 89,3 MM.
-    F2 e F5 são tecnicamente inviáveis sem F4. O prazo de cibersegurança OT (F1) é 31/12/2027 sob
-    auditoria regulatória da ANP. O contrato da TecMar morre em 31/01/2027 e a sustentação F6 nunca
-    teve linha orçamentária própria.
+    Você assessora o Comitê de Investimentos em TIC da Aurora Energia S.A. O Programa Horizonte Digital
+    solicitou R$ 96,0 MM para 2027, mas a Diretoria Financeira (DFI) fixou um teto inegociável de R$ 58,0 MM.
+    Audite com profundidade e independência técnica o case do programa, a política de decisão e o glossário
+    (case_horizonte_digital.md, politica_decisao_horizonte_2027.md e glossario.md), avaliando viabilidade técnica,
+    orçamentária, contratual e regulatória sem assumir premissas não comprovadas.
   artifacts:
     - case_horizonte_digital.md
     - politica_decisao_horizonte_2027.md
@@ -26,53 +34,54 @@ orchestrators:
       model: "gpt-5.6-luna"
       instructions: >-
         Crie exatamente uma frente 'governanca-carteira' atribuída ao 'coordenador-governanca'.
-        Crie exatamente três tarefas nessa frente, uma para cada worker, usando estritamente os IDs:
+        Crie exatamente três tarefas nessa frente, uma para cada analista, usando estritamente os IDs:
         'analista-orcamento-contratos', 'analista-viabilidade-tecnica' e 'analista-risco-regulatorio'.
-        Consolide o Parecer Executivo de Recomendação para o Comitê de TIC demonstrando o atendimento
-        integral e rigoroso a todos os requisitos MUST-01 a MUST-10.
-        Para MUST-10: nomeie donos formais (usando os stakeholders da Seção 4: Renata Salgado, Cel. Naves,
-        Larissa Fontoura, Márcio Quaresma) e gatilhos claros de escalonamento para cada item não financiado.
-        Sinalize expressamente o conflito de interesses de Wilson Tagliatti (E&P), que contratou o SaaS
-        paralelo de R$ 3,2 MM/ano por fora e cujo insucesso do programa Horizonte Digital valida sua contratação.
-        No business case, aponte que o piloto foi no FPSO Aurora-12 (afretado/BOT, unidade menos representativa).
+        Consolide os achados dos três analistas em um Parecer Executivo completo, independente e conclusivo,
+        atendendo rigorosamente aos requisitos mandatórios MUST-01 a MUST-10 da política de decisão,
+        com deliberações justificadas para cada projeto e contrato, riscos com donos e critérios de escalonamento.
     - id: coordenador-governanca
       role: coordinator
       model: "gpt-5.6-luna"
       instructions: >-
-        Oriente e revise os achados garantindo que nenhum número fure o teto de R$ 58 MM (R$ 31,2 MM
-        comprometido + R$ 26,8 MM discricionário), que MUST-01 a MUST-10 sejam integralmente atendidos
-        (incluindo donos e gatilhos de escalonamento no MUST-10) e que o conflito de interesses de Wilson
-        Tagliatti seja explicitado.
+        Oriente os analistas a auditarem criticamente os documentos de suas respectivas áreas e cruze os achados
+        para garantir coerência entre restrições orçamentárias, viabilidade técnica de infraestrutura e prazos regulatórios.
+        Na etapa de revisão, retorne no campo 'track_id' o valor 'governanca-carteira' e no campo 'accepted_task_ids'
+        estritamente a lista dos IDs das tarefas aceitas presentes em task_results (ex: 'tarefa-orcamento-contratos',
+        'tarefa-viabilidade-tecnica', 'tarefa-risco-regulatorio'). Jamais coloque IDs inválidos em accepted_task_ids.
+        Assegure que os requisitos MUST-01 a MUST-10 foram integralmente cobertos com evidências do texto.
 workers:
   count: 3
   agents:
     - id: analista-orcamento-contratos
       specialty: >-
-        Inspecione o teto financeiro de R$ 58,0 MM, os R$ 31,2 MM de compromissos contratuais (AVEVA PI,
-        Cognitive APM, TecMar, Cloud Azure, VSAT), opções de renegociação/rescisão, conversão de shelfware
-        com -30% até 30/11/2026, recálculo do business case (R$ 1,8 MM medido no Aurora-12 vs R$ 40 MM prometido,
-        notando que o Aurora-12 afretado é a unidade menos representativa) e donos/gatilhos do MUST-10.
+        Audite as contas financeiras e compromissos contratuais do programa. Analise a alocação frente ao teto
+        de R$ 58,0 MM (comprometido vs discricionário); examine os cinco contratos legados e opções de manutenção,
+        renegociação ou rescisão; audite os números do business case original frente às medições reais do projeto
+        e identifique donos e gatilhos de escalonamento para restrições financeiras.
       model: "gpt-5.6-terra"
       tools: [document_search, repository_read]
     - id: analista-viabilidade-tecnica
       specialty: >-
-        Inspecione as dependências técnicas entre projetos (F4 conectividade LEO/backhaul é pré-requisito
-        para F2 APM e F5 CIO; sensoriamento deficiente em 7 unidades custando R$ 19,3 MM; aditivos de
-        FPSOs afretados de R$ 1,1 MM/unidade; e fitas LTO-5 com erro 3,1% em F3 OSDU separando atraso de perda irreversível).
+        Audite a viabilidade técnica e arquitetural dos projetos propostos (F1 a F6). Analise a prontidão da infraestrutura
+        (redes, banda, conectividade, sensoriamento e telemetria); mapeie dependências técnicas entre as frentes;
+        avalie a compatibilidade com os tipos de ativos offshore (próprios vs afretados BOT vs plataformas fixas) e
+        verifique a integridade dos dados históricos e requisitos das paradas operacionais.
       model: "gpt-5.6-terra"
       tools: [document_search, repository_read]
     - id: analista-risco-regulatorio
       specialty: >-
-        Inspecione F1 (remediação ciber OT até 31/12/2027 prazo ANP), a transição do fim da TecMar em
-        31/01/2027 (38 alocados), a necessidade mandatória de sustentação F6 a partir de 01/02/2027 e
-        audite o conflito de interesses de Wilson Tagliatti (E&P) na avaliação do programa frente ao SaaS paralelo.
+        Audite os riscos regulatórios, de cibersegurança OT, continuidade operacional e governança de stakeholders.
+        Avalie o prazo e as exigências da auditoria regulatória da ANP; a transição de serviços críticos e sustentação;
+        posicione soluções paralelas e possíveis conflitos de interesse de stakeholders reportados nos documentos;
+        e estruture o mapa de riscos dos itens não financiados com donos e critérios de escalonamento.
       model: "gpt-5.6-terra"
       tools: [document_search, repository_read]
 execution:
   max_parallel_workers: 3
-  max_model_calls: 16
-  timeout_seconds: 300
-  worker_timeout_seconds: 120
+  max_model_calls: 24
+  worker_max_turns: 8
+  timeout_seconds: 360
+  worker_timeout_seconds: 140
   max_retries_per_task: 1
   on_worker_failure: partial
   allowed_models: ["gpt-5.6-luna", "gpt-5.6-sol", "gpt-5.6-terra"]

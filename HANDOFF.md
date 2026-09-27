@@ -38,11 +38,11 @@ Todos os cenários reais foram executados e validados:
    - **Workers GPT 5.6 Luna**: `status: completed`, 13 chamadas, 58.9s. Nota estimada **78,5/100**, superando com folga todos os gates sumários (C1, C2 e C3) e gabaritando as premissas P1–P8. Artefato: `artifacts/terminais_cordilheira_blind_result.json`.
 
 3. **Governança de TIC — Aurora Energia** (`examples/aurora/`):
-   - **Workers GPT 5.6 Terra**: `status: completed`, 10 chamadas, 45.0s. Atendimento integral a MUST-01 a MUST-10, com isolamento do déficit de R$ 4,0 MM em F6 e impedimento formal de Wilson Tagliatti. Artefato: `artifacts/aurora_terra_result.json`.
+   - **Workers GPT 5.6 Terra**: `status: completed`, 10 chamadas, 45.9s. Execução 100% cega: sem nenhuma dica no YAML, atendeu rigorosamente MUST-01 a MUST-10, isolou o déficit de R$ 4,0 MM em F6, diagnosticou o viés do piloto no Aurora-12, a sobreposição do SaaS paralelo de R$ 3,2 MM e determinou os donos e gatilhos de escalonamento. Artefato: `artifacts/aurora_blind_terra_result.json`.
    - **Workers GPT 5.6 Luna**: `status: completed`, 11 chamadas, 42.1s. 100% de aderência ao gabarito oficial. Artefato: `artifacts/aurora_decisao_comite_otimizada.json`.
 
 4. **Due Diligence Contratual B2B SaaS** (`examples/contract_audit.yaml`):
-   - **Workers GPT 5.6 Terra**: `status: completed`, 12 chamadas, 41.8s. Cálculo da exposição de lock-in de R$ 900.000,00 e quantificação da assimetria de SLA (95% = 36h/mês de indisponibilidade). Artefato: `artifacts/contract_audit_terra_result.json`.
+   - **Workers GPT 5.6 Terra**: `status: completed`, 13 chamadas, 40.0s. Execução 100% cega: sem qualquer menção prévia a números de cláusulas, mapeou e fundamentou autonomamente todas as cláusulas (2.1-2.4, 3.1-3.3, 4.1-4.3, 5.2-5.4 e 7.1), calculou o lock-in de R$ 900.000,00 e converteu a assimetria de SLA de 95% em 36h/mês de indisponibilidade. Artefato: `artifacts/contract_audit_blind_terra_result.json`.
    - **Workers GPT 5.6 Luna**: `status: completed`, 11 chamadas, 37.5s. Matriz de riscos e contra-redações. Artefato: `artifacts/due_diligence_contrato.json`.
 
 4. **Auditoria real do repositório** (`audit_repo.yaml`):

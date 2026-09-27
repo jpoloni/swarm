@@ -35,21 +35,20 @@ workers:
   agents:
     - id: auditor-rescisao-vigencia
       specialty: >-
-        Inspecione a Cláusula 2 (vigência, renovação automática de 36 meses, multas de 100% por rescisão
-        e assimetria de prazos) e a Cláusula 7 (custos e foro/arbitragem internacional em Miami).
+        Audite os termos de vigência, regras de renovação, condições de término/resilição/rescisão,
+        multas compensatórias e mecanismos de solução de controvérsias (foro, lei aplicável, arbitragem e sucumbência).
       model: "gpt-5.6-terra"
       tools: [document_search, repository_read]
     - id: auditor-responsabilidade-sla
       specialty: >-
-        Inspecione a Cláusula 3 (SLA baixo de 95%, ausência de rescisão motivada e créditos inócuos)
-        e a Cláusula 4 (liability cap de apenas 1 mensalidade para a fornecedora e responsabilidade
-        ilimitada para a CONTRATANTE).
+        Audite os níveis de serviço (SLA), disponibilidade técnica, métricas e créditos por descumprimento,
+        bem como os limites e exclusões de responsabilidade civil (liability caps, danos indiretos e assimetrias).
       model: "gpt-5.6-terra"
       tools: [document_search, repository_read]
     - id: auditor-dados-privacidade
       specialty: >-
-        Inspecione a Cláusula 5 (uso indevido de dados para treino de IA e monetização, suboperadores
-        sem autorização e prazo abusivo de 30 dias para notificar incidentes de segurança sob a LGPD).
+        Audite as cláusulas de privacidade, proteção de dados pessoais (LGPD), propriedade e uso de dados
+        corporativos (incluindo inteligência artificial e monetização), segurança, suboperadores e prazos de notificação.
       model: "gpt-5.6-terra"
       tools: [document_search, repository_read]
 execution:
