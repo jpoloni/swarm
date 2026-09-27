@@ -1,0 +1,96 @@
+schema_version: "1"
+run_id: "hospitais-cordilheira-peea-2027-blind-terra"
+objective: >-
+  Elaborar o Parecer Técnico e de Governança independente para a reunião do Conselho de Administração da
+  Hospitais Cordilheira S.A. (HCS) de 30/09/2026, avaliando o pacote PEEA 2027 (frentes F1 a F9), a proposta
+  consolidada da Diretoria (DOC-03), suas premissas declaradas (P1 a P8) e a medida de emergência da radioterapia do Q4/2026.
+  O parecer deve cumprir rigorosamente os 8 itens obrigatórios do Termo de Referência (DOC-00):
+  1. Catálogo de afirmações com ID canônico [Cxx], doc_id e citação literal;
+  2. Decisões de cada frente ancoradas explicitamente nos IDs das afirmações que as sustentam;
+  3. Afirmações sem consequência decisória com justificativa;
+  4. Tabela de alocação por fonte/destino, separando fonte, destino, saldos e sobras explicitados (CAPEX Fonte A,
+     Custeio Fonte B, Rubrica compulsória 3.9.1, Recursos Vinculados Fonte C e Físico/sala-dias Fonte D);
+  5. Cronograma físico trimestral do bloco cirúrgico (capacidade líquida vs. rotina vs. projetos em sala-dias);
+  6. Registro de riscos para cada frente/item, contendo exposição financeira estimada (R$ MM), dono formal e gatilho de escalonamento;
+  7. Premissas contestadas: avaliação individual de P1 a P8 com evidência documental que sustenta ou enfraquece cada uma e o efeito decisório;
+  8. Apêndice de cálculo refazendo todas as fórmulas e contas no formato 'conta = resultado', recalculando tudo a partir das evidências primárias.
+context:
+  text: >-
+    Você atua na assessoria técnica e de governança independente contratada para emitir parecer ao Conselho de Administração
+    da Hospitais Cordilheira S.A. (HCS).
+    O Conselho exige rigor assistencial, segurança dos pacientes, continuidade das habilitações de alta complexidade,
+    cumprimento de determinações judiciais/regulatórias e estrita disciplina financeira, sem rompimento de covenants nem suposições não comprovadas.
+    O parecer deve utilizar exclusivamente as evidências documentais contidas neste dossiê (DOC-00 a DOC-27), auditando de forma autônoma
+    as alegações da Diretoria e recalculando todas as grandezas operacionais, financeiras e regulatórias.
+  artifacts:
+    - 01_mandato_e_secao1.md
+    - 02_secao2_frentes_propostas.md
+    - 03_secao3_quadro_diretoria_premissas.md
+    - 04_anexos_operacionais_financeiros.md
+    - 05_anexos_regulatorios_tecnicos.md
+orchestrators:
+  count: 2
+  agents:
+    - id: relator-comite
+      role: primary
+      model: "gpt-5.6-luna"
+      instructions: >-
+        Crie exatamente uma frente 'decisao-peea-2027' atribuída ao 'coordenador-governanca-hospitalar'.
+        Crie exatamente três tarefas nessa frente, uma para cada analista, usando estritamente os IDs:
+        'analista-financas-orcamento', 'analista-engenharia-operacao' e 'analista-regulatorio-riscos'.
+        Consolide os achados dos três analistas em um Parecer Técnico e Executivo completo, independente e conclusivo,
+        atendendo rigorosamente aos 8 requisitos obrigatórios do Termo de Referência (DOC-00), com deliberações justificadas por frente,
+        cronograma trimestral em sala-dias, tabela de alocação por fonte e apêndice de cálculos explícito.
+    - id: coordenador-governanca-hospitalar
+      role: coordinator
+      model: "gpt-5.6-luna"
+      instructions: >-
+        Oriente os analistas a auditarem criticamente os documentos de suas respectivas áreas e cruze os achados
+        para garantir consistência entre capacidade física cirúrgica/CME, restrições financeiras/covenants e prazos regulatórios/judiciais.
+        Na etapa de revisão, retorne no campo 'track_id' o valor 'decisao-peea-2027' e no campo 'accepted_task_ids'
+        estritamente a lista dos IDs das tarefas aceitas presentes em task_results (ex: 'tarefa-financas-orcamento',
+        'tarefa-engenharia-operacao', 'tarefa-regulatorio-riscos'). Jamais coloque IDs de afirmações [Cxx] em accepted_task_ids.
+        Assegure que os 8 itens obrigatórios do DOC-00 e a avaliação de P1 a P8 foram integralmente cobertos com evidências do texto.
+workers:
+  count: 3
+  agents:
+    - id: analista-financas-orcamento
+      specialty: >-
+        Audite as finanças corporativas, tetos orçamentários e contratos financeiros (DOC-01, DOC-03 a DOC-10, DOC-12, DOC-16, DOC-26, DOC-27 e frentes F1 a F9).
+        Recalcule a autorização real de CAPEX (Fonte A, verificando cancelamentos como MAT-07 e saldo no ERP), teto de Custeio (Fonte B),
+        regras da PO-12 para despesas compulsórias na rubrica 3.9.1 e recursos vinculados da caução TCRA nº 05/2023 (Fonte C, prazos de decadência e glosas);
+        teste o covenant de Dívida Líquida/EBITDA ≤ 3,25x; examine take-or-pay de gases medicinais e termos contratuais; elabore a tabela de alocação por fonte
+        e o apêndice de cálculos completo.
+      model: "gpt-5.6-terra"
+      tools: [document_search, repository_read]
+    - id: analista-engenharia-operacao
+      specialty: >-
+        Audite a infraestrutura, engenharia clínica e operações assistenciais (DOC-01, DOC-02, DOC-13, DOC-14, DOC-19 a DOC-23 e frentes F1, F2, F4, F7).
+        Analise a capacidade do bloco cirúrgico (12 salas, ocupação eletiva de 89,3%, rotina e manutenções programadas vs saldo de sala-dias);
+        métodos construtivos de interligação de gases e exaustão (método convencional de 140 dias vs método alternativo E-77);
+        condicionantes de climatização e troca de chillers (E-78); capacidade e gargalos da CME (demanda de 2.380 vs capacidade de 2.450 instrumentais/dia);
+        parque de bombas de infusão; e construa o cronograma físico trimestral em sala-dias.
+      model: "gpt-5.6-terra"
+      tools: [document_search, repository_read]
+    - id: analista-regulatorio-riscos
+      specialty: >-
+        Audite a conformidade regulatória, jurídica, assistencial e matriz de riscos (DOC-01, DOC-02, DOC-08, DOC-09, DOC-11, DOC-13, DOC-14, DOC-15, DOC-17, DOC-18, DOC-24, DOC-25 e medidas de emergência).
+        Avalie as regras do RT-MS 11/2024 para o serviço de radioterapia (LINAC, produção mínima de 11.000 sessões e risco de desabilitação imediata/bienal);
+        a Ação Civil Pública dos gases (ACP 0042.2025, prazo de 28/11/2026 e multas diárias); normas sanitárias da RDC 07/2025 para CME plena;
+        cláusulas contratuais de salas da Omega (n. 55/2024) e prazos de notificação da Geomed; apólice de seguro; e estruture o registro de riscos
+        com exposição, dono e gatilho de escalonamento.
+      model: "gpt-5.6-terra"
+      tools: [document_search, repository_read]
+execution:
+  max_parallel_workers: 3
+  max_model_calls: 32
+  worker_max_turns: 8
+  timeout_seconds: 420
+  worker_timeout_seconds: 180
+  max_retries_per_task: 1
+  on_worker_failure: partial
+  allowed_models: ["gpt-5.6-luna", "gpt-5.6-sol", "gpt-5.6-terra"]
+output:
+  language: pt-BR
+  format: markdown
+  require_evidence: true
