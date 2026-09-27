@@ -419,6 +419,8 @@ def test_tool_document_search_behavior(tmp_path):
     search_fn = tools[0].__wrapped__
 
     assert "notes.txt:2: Linha 2: Configuração de Banco" in search_fn("banco")
+    # Busca tolerante quando não há substring exata idêntica
+    assert "notes.txt:2: Linha 2: Configuração de Banco" in search_fn("configurar banco de dados")
     assert search_fn("inexistente") == "Nenhum resultado."
     assert search_fn("   ") == "Consulta vazia."
 

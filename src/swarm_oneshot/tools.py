@@ -28,23 +28,55 @@ def build_tools(names: list[str], base_dir: Path, artifacts: list[str]) -> list[
 
     tools: list[Any] = []
     if "document_search" in names:
+        import re
+
         @function_tool
         def document_search(query: str) -> str:
-            """Search text artifacts declared in the run configuration."""
+            """Search text artifacts declared in the run configuration with exact and keyword matching."""
             needle = query.casefold().strip()
             if not needle:
                 return "Consulta vazia."
-            hits: list[str] = []
+
+            # 1. Busca exata por substring
+            exact_hits: list[str] = []
             for artifact in artifacts:
                 path = resolve_allowed_path(base_dir, artifacts, artifact)
                 for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
                     if needle in line.casefold():
-                        hits.append(f"{artifact}:{number}: {line[:400]}")
-                    if len(hits) >= 12:
-                        break
-                if len(hits) >= 12:
+                        exact_hits.append(f"{artifact}:{number}: {line[:400]}")
+                        if len(exact_hits) >= 12:
+                            break
+                if len(exact_hits) >= 12:
                     break
-            return "\n".join(hits) if hits else "Nenhum resultado."
+
+            if exact_hits:
+                return "\n".join(exact_hits)
+
+            # 2. Busca tolerante por palavras-chave (tokens com 3+ caracteres)
+            tokens = [t for t in re.findall(r"\w+", needle) if len(t) >= 3]
+            if not tokens:
+                return "Nenhum resultado."
+
+            scored_hits: list[tuple[int, int, str]] = []
+            global_idx = 0
+            for artifact in artifacts:
+                path = resolve_allowed_path(base_dir, artifacts, artifact)
+                for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+                    global_idx += 1
+                    line_lower = line.casefold()
+                    matched = sum(1 for t in tokens if t in line_lower)
+                    if matched > 0:
+                        scored_hits.append((matched, -global_idx, f"{artifact}:{number}: {line[:400]}"))
+
+            if not scored_hits:
+                return "Nenhum resultado."
+
+            # Ordena por maior contagem de termos casados
+            scored_hits.sort(key=lambda item: item[0], reverse=True)
+            top_score = scored_hits[0][0]
+            # Retorna até 12 resultados relevantes
+            selected = [hit[2] for hit in scored_hits[:12] if hit[0] >= min(top_score, 1)]
+            return "\n".join(selected) if selected else "Nenhum resultado."
 
         tools.append(document_search)
 
