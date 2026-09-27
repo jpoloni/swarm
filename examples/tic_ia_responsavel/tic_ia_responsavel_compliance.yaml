@@ -1,0 +1,85 @@
+schema_version: "1"
+run_id: "tic-ia-responsavel-compliance-blind-terra"
+objective: >-
+  Elaborar o Dossiê Executivo de Auditoria de Conformidade de IA Responsável para a Diretoria de TIC e Digital
+  da PetroHorizonte S.A., avaliando de forma independente o Incidente Operacional RIO-2025-IA-0087 ocorrido com o modelo
+  PH-PREDCOMP no Trem TC-PH7-A frente aos requisitos mandatórios da Política de IA Responsável (POL-TIC-IA-2025-04).
+  O dossiê deve cumprir rigorosamente:
+  1. Veredito binário formal ('CUMPRIDO' ou 'GAP') para cada um dos requisitos MUST-01 a MUST-07 da política;
+  2. Citações textuais e âncoras documentais exatas para cada constatação;
+  3. Análise detalhada dos prazos, papéis (owners, aprovadores), logs e procedimentos executados versus os regulamentos;
+  4. Identificação dos impactos operacionais, sistêmicos e contratuais decorrentes de eventuais desvios;
+  5. Plano de remediação e pré-requisitos mandatórios para o encerramento formal de governança do incidente.
+context:
+  text: >-
+    Você atua na assessoria independente de governança e auditoria da Diretoria de TIC e Digital da PetroHorizonte S.A.
+    Audite com profundidade e rigor técnico os documentos anexos (glossario.md, politica_ia_responsavel.md e incidente_modelo_operacao.md).
+    Avalie estritamente os fatos registrados no RIO-2025-IA-0087 contra as normas da POL-TIC-IA-2025-04, sem assumir aprovações verbais,
+    extensões tácitas ou conformidades não comprovadas por evidência documental arquivada.
+  artifacts:
+    - glossario.md
+    - politica_ia_responsavel.md
+    - incidente_modelo_operacao.md
+orchestrators:
+  count: 2
+  agents:
+    - id: relator-auditoria-ia
+      role: primary
+      model: "gpt-5.6-luna"
+      instructions: >-
+        Crie exatamente uma frente 'auditoria-conformidade-ia' atribuída ao 'coordenador-conformidade-ia'.
+        Crie exatamente três tarefas nessa frente, uma para cada analista, usando estritamente os IDs:
+        'auditor-governanca-modelos', 'auditor-operacao-hitl' e 'auditor-drift-linhagem'.
+        Consolide os achados dos três auditores em um Parecer de Conformidade completo, independente e conclusivo,
+        apresentando uma matriz executiva com o veredito ('CUMPRIDO' ou 'GAP') para cada requisito MUST-01 a MUST-07,
+        evidências documentadas, detalhamento das não conformidades e plano de encerramento do incidente.
+    - id: coordenador-conformidade-ia
+      role: coordinator
+      model: "gpt-5.6-luna"
+      instructions: >-
+        Oriente os auditores a inspecionarem rigorosamente os documentos de suas respectivas áreas e cruze os achados
+        para garantir que todas as exigências da política POL-TIC-IA-2025-04 foram checadas contra os registros do RIO-2025-IA-0087.
+        Na etapa de revisão, retorne no campo 'track_id' o valor 'auditoria-conformidade-ia' e no campo 'accepted_task_ids'
+        estritamente a lista dos IDs das tarefas aceitas presentes em task_results (ex: 'tarefa-governanca-modelos',
+        'tarefa-operacao-hitl', 'tarefa-drift-linhagem'). Jamais coloque IDs de requisitos em accepted_task_ids.
+        Assegure que os requisitos MUST-01 a MUST-07 receberam vereditos binários claros e fundamentados.
+workers:
+  count: 3
+  agents:
+    - id: auditor-governanca-modelos
+      specialty: >-
+        Audite a governança cadastral, ciclo de vida e fornecedores do modelo. Inspecione o cumprimento dos requisitos:
+        MUST-01 (registro no inventário corporativo inv-modelos-ia, identificação do owner com nome/matrícula, versão e model card);
+        MUST-03 (gate de avaliação pré-produção, data do parecer de liberação frente à data de promoção e assinaturas necessárias); e
+        MUST-07 (due diligence de componentes de fornecedor terceiro/vendor, vigência de 12 meses e planos de regularização/desabilitação).
+      model: "gpt-5.6-terra"
+      tools: [document_search, repository_read]
+    - id: auditor-operacao-hitl
+      specialty: >-
+        Audite as operações em produção, autorizações e trilha de auditoria. Inspecione o cumprimento dos requisitos:
+        MUST-02 (mecanismo Human-in-the-Loop para recomendações de alto impacto, verificação de registros de aprovador, matrícula,
+        carimbo de data/hora e decisão prévia nas ordens de intervenção emergencial geradas); e
+        MUST-06 (registro em log imutável de todas as recomendações emitidas com campos mínimos e cumprimento da política de retenção de 2 anos).
+      model: "gpt-5.6-terra"
+      tools: [document_search, repository_read]
+    - id: auditor-drift-linhagem
+      specialty: >-
+        Audite o comportamento operacional, desvios e rastreabilidade de dados. Inspecione o cumprimento dos requisitos:
+        MUST-04 (protocolo de resposta a alertas de drift em produção, prazo de confirmação no RIO em até 2h, prazo de ação/rollback
+        em até 6h contadas da confirmação e autorização formal exigida para eventuais extensões); e
+        MUST-05 (linhagem de dados das features de treino/retreino, documentação de datasets e tempo de recuperação em incidente).
+      model: "gpt-5.6-terra"
+      tools: [document_search, repository_read]
+execution:
+  max_parallel_workers: 3
+  max_model_calls: 24
+  worker_max_turns: 8
+  timeout_seconds: 360
+  worker_timeout_seconds: 140
+  max_retries_per_task: 1
+  on_worker_failure: partial
+  allowed_models: ["gpt-5.6-luna", "gpt-5.6-sol", "gpt-5.6-terra"]
+output:
+  language: pt-BR
+  format: markdown
+  require_evidence: true
