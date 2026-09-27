@@ -1,0 +1,39 @@
+schema_version: "1"
+run_id: "e2e-release-notes"
+objective: "Comparar duas notas de versão e produzir um resumo das mudanças visíveis ao cliente e ações de migração."
+context:
+  text: >-
+    Versão A: A busca agora aceita filtro por data. Consultas existentes continuam funcionando.
+    Versão B: O endpoint de exportação agora retorna uma URL de download em vez dos bytes do arquivo.
+    Clientes da API precisam buscar o arquivo nessa URL.
+  artifacts: []
+orchestrators:
+  count: 1
+  agents:
+    - id: principal
+      role: primary
+      model: "gpt-6-astra"
+      instructions: "Planeje duas análises independentes, distribua aos workers e sintetize com precisão."
+workers:
+  count: 2
+  agents:
+    - id: release-a
+      specialty: "Analise somente a Versão A e identifique mudanças e impacto."
+      model: "gpt-6-astra"
+      tools: []
+    - id: release-b
+      specialty: "Analise somente a Versão B e identifique mudanças e impacto."
+      model: "gpt-6-astra"
+      tools: []
+execution:
+  max_parallel_workers: 2
+  max_model_calls: 8
+  timeout_seconds: 180
+  worker_timeout_seconds: 90
+  max_retries_per_task: 1
+  on_worker_failure: fail
+  allowed_models: ["gpt-6-astra"]
+output:
+  language: pt-BR
+  format: markdown
+  require_evidence: true
