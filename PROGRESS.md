@@ -15,7 +15,8 @@ Atualizado em 2026-09-26 (Sessão 22:40).
 | Orçamento de chamadas | `██████████` 100% | Reembolso seguro com `try/finally` em falhas, cancelamentos e retries |
 
 Últimos casos reais validados com API:
-- `examples/terminais_cordilheira/` → `artifacts/terminais_cordilheira_parecer.json`, status `completed` (14 chamadas, 100% de conformidade com gabarito).
+- `examples/porto_limiar/` → `artifacts/porto_limiar_blind_result.json`, status `completed` (14 chamadas, 100% cego, 9/9 deliberações coincidentes com o gabarito).
+- `examples/terminais_cordilheira/` → `artifacts/terminais_cordilheira_blind_result.json`, status `completed` (13 chamadas, 100% cego, zero reprovação sumária).
 - `examples/aurora/` → `artifacts/aurora_decisao_comite_otimizada.json`, status `completed` (11 chamadas, 100% aderente ao gabarito).
 - `examples/contract_audit.yaml` → `artifacts/due_diligence_contrato.json`, status `completed` (11 chamadas).
 - `audit_repo.yaml` → `artifacts/auditoria.json`, status `completed` (13 chamadas).

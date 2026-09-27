@@ -29,14 +29,20 @@ O projeto implementa uma execução one-shot de agentes no OpenAI Agents SDK, co
 
 Todos os cenários reais foram executados e validados:
 
-1. **Governança Portuária — Terminais Cordilheira S.A.** (`examples/terminais_cordilheira/`):
-   - `status: completed`, 3 tarefas concluídas, 14 chamadas de modelo;
-   - Análise de 28 documentos do corpus fatiados em 5 seções analíticas;
-   - Avaliação de risco, cálculo físico (196 berço-dias líquidos), recomposição de CAPEX/custeio e intimação dos 5 atos fatais de Q4/2026;
-   - 100% de conformidade com o gabarito oficial (`terminais_cordilheira_gabarito.md`), evitando todos os gates sumários (C1, C2, C3);
-   - Artefato: `artifacts/terminais_cordilheira_parecer.json`.
+1. **Comitê Extraordinário de Carteira 2027 — Porto Limiar (TPL)** (`examples/porto_limiar/`):
+   - `status: completed`, 3 tarefas concluídas, 14 chamadas de modelo em 51.9 segundos;
+   - Execução **100% cega**: 9 de 9 deliberações de frentes (F1 a F9) perfeitamente coincidentes com o gabarito oficial;
+   - Identificação do cancelamento de Armazém Norte (+R$ 18 MM de CAPEX, total 178 MM), segregação de OPEX compulsório (F2 e F9 fora do teto pela PF-27), respeito à margem de 18 dias de interdição (rejeitando os 105 dias de F3), cálculo de covenant a 3,42x e análise de elasticidade com foco em capacidade física de cais;
+   - Artefato: `artifacts/porto_limiar_blind_result.json`.
 
-2. **Governança de TIC — Aurora Energia** (`examples/aurora/`):
+2. **Governança Portuária — Terminais Cordilheira S.A.** (`examples/terminais_cordilheira/`):
+   - `status: completed`, 3 tarefas concluídas, 13 chamadas de modelo em 58.9 segundos;
+   - Execução **100% cega**: zero reprovação sumária (gates C1, C2 e C3 superados);
+   - 100% de acerto nas premissas (P1–P3 sustentadas, P4–P8 contestadas);
+   - Intimação de todos os 5 prazos críticos do Q4/2026 com donos e datas;
+   - Artefato: `artifacts/terminais_cordilheira_blind_result.json`.
+
+3. **Governança de TIC — Aurora Energia** (`examples/aurora/`):
    - `status: completed`, 3 tarefas concluídas, 11 chamadas de modelo;
    - Alocação do portfólio Horizonte Digital 2027 respeitando tetos de CAPEX e OPEX;
    - 100% de aderência ao gabarito oficial (`examples/aurora-gabarito.md`);

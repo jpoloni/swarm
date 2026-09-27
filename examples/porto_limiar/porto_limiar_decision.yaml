@@ -1,0 +1,91 @@
+schema_version: "1"
+run_id: "porto-limiar-carteira-2027-blind"
+objective: >-
+  Elaborar o Parecer Executivo de Governança e Decisão de Carteira independente para o Comitê Extraordinário
+  de Carteira 2027 do Terminal Limiar (TPL), avaliando o pacote proposto pela Diretoria (DOC-07), suas premissas
+  (P1 a P8) e cada uma das frentes (F1 a F9). O parecer deve cumprir rigorosamente os 10 requisitos obrigatórios
+  do Mandato do Comitê:
+  1. Afirmações canônicas com ID [Cxx], doc_id, localização e citação literal;
+  2. Decisões ancoradas nos IDs das afirmações;
+  3. Afirmações sem consequência decisória com justificativa;
+  4. Tabela de alocação por fonte/entidade, separando frente, fonte, valor utilizado e saldo (CAPEX, OPEX, recursos vinculados e capacidade física não fungíveis);
+  5. Cronograma físico trimestral demonstrando capacidade bruta, rotina, projetos e saldo por trimestre;
+  6. Registro de riscos para cada frente (aprovada, rejeitada ou diferida), com exposição financeira, fórmula, dono e gatilho de escalonamento;
+  7. Premissas contestadas: avaliar individualmente P1 a P8, com evidência documental que sustenta ou enfraquece cada uma e o efeito decisório;
+  8. Apêndice de cálculo refazendo todas as somas e fórmulas no formato 'conta = resultado';
+  9. Mapa de dependências declarando pré-requisitos, ordem e janela de cada frente;
+  10. Análise de elasticidade indicando qual recurso adicional mudaria a carteira, em qual quantidade e sob qual gatilho verificável.
+context:
+  text: >-
+    Você atua na assessoria executiva independente do Comitê Extraordinário de Carteira 2027 do Terminal Limiar (TPL).
+    O Conselho determinou uma decisão única e soberana sobre a carteira 2027, exigindo a preservação da concessão,
+    segurança operacional, conformidade regulatória e disciplina orçamentária rígida, sem criar dívida nova nem romper covenants.
+    Audite com profundidade e rigor técnico todos os documentos anexos (DOC-01 a DOC-07 e ANX-01 a ANX-10),
+    recalculando de forma independente a viabilidade operacional, orçamentária, regulatória e contratual.
+  artifacts:
+    - 01_mandato_e_secao1.md
+    - 02_secao2_frentes_propostas.md
+    - 03_secao3_quadro_diretoria_premissas.md
+    - 04_anexos_operacionais_financeiros_regulatorios.md
+orchestrators:
+  count: 2
+  agents:
+    - id: relator-comite
+      role: primary
+      model: "gpt-5.6-luna"
+      instructions: >-
+        Crie exatamente uma frente 'decisao-carteira' atribuída ao 'coordenador-carteira'.
+        Crie exatamente três tarefas nessa frente, uma para cada analista, usando estritamente os IDs:
+        'analista-engenharia-infraestrutura', 'analista-financas-orcamento' e 'analista-contratos-regulacao'.
+        Consolide os achados dos três analistas em um Parecer Executivo completo, independente e conclusivo,
+        atendendo rigorosamente aos 10 requisitos mandatórios do Mandato do Comitê, com deliberações claras por frente,
+        cronograma trimestral, mapa de dependências e apêndice de cálculo explícito.
+    - id: coordenador-carteira
+      role: coordinator
+      model: "gpt-5.6-luna"
+      instructions: >-
+        Oriente os analistas a auditarem criticamente os documentos de suas respectivas áreas e cruze os achados
+        para verificar consistência entre restrições físicas de berço, regras contábeis/financeiras e prazos contratuais.
+        Na etapa de revisão, retorne no campo 'track_id' o valor 'decisao-carteira' e no campo 'accepted_task_ids'
+        estritamente a lista dos IDs das tarefas aceitas presentes em task_results (ex: 'tarefa-engenharia-infraestrutura',
+        'tarefa-financas-orcamento', 'tarefa-contratos-regulacao'). Jamais coloque IDs de afirmações [Cxx] em accepted_task_ids.
+        Assegure que os 10 itens obrigatórios do Mandato foram integralmente atendidos.
+workers:
+  count: 3
+  agents:
+    - id: analista-engenharia-infraestrutura
+      specialty: >-
+        Audite as condições físicas e operacionais do terminal (DOC-01, DOC-06, ANX-03, ANX-07, ANX-08 e frentes F2, F3, F4, F7, F9).
+        Analise a capacidade dos berços B1 e B2, portêineres, calado e assoreamento; os limites anuais e trimestrais de interdição
+        versus a rotina de atracação obrigatória; os métodos construtivos e durações das intervenções; e a viabilidade do descarte de sedimentos.
+      model: "gpt-5.6-luna"
+      tools: [document_search, repository_read]
+    - id: analista-financas-orcamento
+      specialty: >-
+        Audite o orçamento e as contas financeiras (DOC-02, DOC-03, DOC-04, DOC-05, DOC-07, ANX-09, ANX-10).
+        Recalcule a autorização real de CAPEX (verificando deliberações sobre cancelamentos como Armazém Norte), teto de OPEX
+        e regras da Política Financeira PF-27 para despesas compulsórias de segurança e regulação; audite contas vinculadas (C1, C2, C3);
+        teste a aderência ao covenant Dívida Líquida/EBITDA de 3,50x; produza o apêndice de cálculo e a análise de elasticidade.
+      model: "gpt-5.6-luna"
+      tools: [document_search, repository_read]
+    - id: analista-contratos-regulacao
+      specialty: >-
+        Audite os instrumentos contratuais, regulatórios e comerciais (DOC-01, DOC-04, ANX-01 a ANX-06, ANX-08, ANX-09 e frentes F1, F5, F6, F8).
+        Analise o contrato ferroviário RF-11 (regras e riscos de cancelamento de slots), obrigações da Autoridade Portuária e licenças,
+        contratos e opções contratuais de software/sistemas (Atlas 7, Nexus Port, TurnGate, PrediCrane); audite o histórico de cauções (C1 a C3);
+        confronte as premissas P1 a P8 com as evidências documentais e monte o mapa de dependências.
+      model: "gpt-5.6-luna"
+      tools: [document_search, repository_read]
+execution:
+  max_parallel_workers: 3
+  max_model_calls: 32
+  worker_max_turns: 8
+  timeout_seconds: 400
+  worker_timeout_seconds: 180
+  max_retries_per_task: 1
+  on_worker_failure: partial
+  allowed_models: ["gpt-5.6-luna", "gpt-5.6-sol"]
+output:
+  language: pt-BR
+  format: markdown
+  require_evidence: true
