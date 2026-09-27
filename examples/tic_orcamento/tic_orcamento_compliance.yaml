@@ -1,0 +1,87 @@
+schema_version: "1"
+run_id: "tic-orcamento-compliance-blind-terra"
+objective: >-
+  Elaborar o Parecer Executivo de Auditoria de Governança Orçamentária de TIC para a Diretoria de Tecnologia
+  da Informação (DTI) e Controladoria da PetroHorizonte S.A., avaliando de forma independente o Registro de Evento
+  Orçamentário REO-2025-0142 referente à Unidade Offshore Delta (UOD) frente aos requisitos mandatórios da Política
+  de Governança de Orçamento de TIC (POL-TIC-ORC-2025-02).
+  O parecer deve cumprir rigorosamente:
+  1. Veredito binário e explícito ('CUMPRIDO', 'GAP' ou 'PENDENTE_PRAZO') para cada requisito MUST-01 a MUST-07 da política;
+  2. Evidências literais documentadas com localização precisa (seção, linha, data/hora e identificadores de documento);
+  3. Confrontação detalhada entre a avaliação preliminar do REO e as exigências normativas da política (identificando eventuais divergências ou gaps não reconhecidos);
+  4. Apuração das alçadas de aprovação, prazos regulamentares e impactos financeiros decorrentes dos desvios;
+  5. Plano de ação obrigatório e condicionantes formais para a regularização e encerramento do evento orçamentário.
+context:
+  text: >-
+    Você atua na assessoria independente de governança e auditoria orçamentária da Diretoria de TIC da PetroHorizonte S.A.
+    Audite com rigor técnico e independência todos os documentos anexos (glossario.md, politica_governanca_orcamento_tic.md
+    e evento_overrun_offshore_delta.md). Avalie criticamente os fatos reportados no REO-2025-0142 contra as regras da
+    POL-TIC-ORC-2025-02, verificando se os prazos, alçadas e procedimentos de controle de spend foram estritamente cumpridos.
+  artifacts:
+    - glossario.md
+    - politica_governanca_orcamento_tic.md
+    - evento_overrun_offshore_delta.md
+orchestrators:
+  count: 2
+  agents:
+    - id: relator-auditoria-orcamentaria
+      role: primary
+      model: "gpt-5.6-luna"
+      instructions: >-
+        Crie exatamente uma frente 'auditoria-governanca-orcamentaria' atribuída ao 'coordenador-governanca-orcamentaria'.
+        Crie exatamente três tarefas nessa frente, uma para cada analista, usando estritamente os IDs:
+        'auditor-capex-forecast', 'auditor-freeze-overrun' e 'auditor-finops-contingencia'.
+        Consolide os achados dos três auditores em um Parecer de Conformidade Orçamentária completo, independente e conclusivo,
+        apresentando uma matriz executiva com o veredito para cada requisito MUST-01 a MUST-07, evidências documentadas,
+        detalhamento das não conformidades frente à política e plano de ação para regularização do REO.
+    - id: coordenador-governanca-orcamentaria
+      role: coordinator
+      model: "gpt-5.6-luna"
+      instructions: >-
+        Oriente os auditores a inspecionarem rigorosamente os documentos de suas respectivas áreas e cruze os achados
+        para garantir que todas as exigências da política POL-TIC-ORC-2025-02 foram checadas contra os registros do REO-2025-0142.
+        Na etapa de revisão, retorne no campo 'track_id' o valor 'auditoria-governanca-orcamentaria' e no campo 'accepted_task_ids'
+        estritamente a lista dos IDs das tarefas aceitas presentes em task_results (ex: 'tarefa-capex-forecast',
+        'tarefa-freeze-overrun', 'tarefa-finops-contingencia'). Jamais coloque IDs de requisitos em accepted_task_ids.
+        Assegure que os requisitos MUST-01 a MUST-07 foram integralmente avaliados com rigor documental.
+workers:
+  count: 3
+  agents:
+    - id: auditor-capex-forecast
+      specialty: >-
+        Audite os requisitos de planejamento e compromissos de capital. Inspecione o cumprimento dos requisitos:
+        MUST-01 (aprovação prévia pelo CGTIC com número de ata antes de PO ou contrato para Capex de TIC ≥ R$ 500.000,00); e
+        MUST-02 (publicação mensal de forecast atualizado até o 5º dia útil do mês, acumulado YTD e justificativa de variação > 5% frente ao OAT).
+      model: "gpt-5.6-terra"
+      tools: [document_search, repository_read]
+    - id: auditor-freeze-overrun
+      specialty: >-
+        Audite os requisitos de disciplina orçamentária e controle de desvios. Inspecione o cumprimento dos requisitos:
+        MUST-03 (respeito à janela de change freeze orçamentário nos últimos 10 dias corridos do trimestre, limite de R$ 50.000,00 para novos
+        compromissos Opex e exigência de exceção formal do CFO); e
+        MUST-04 (identificação de realizado + comprometido superando 10% do orçamento da linha e obrigatoriedade de rebaseline aprovado
+        pelo CGTIC antes de novos desembolsos ou compromissos na mesma linha).
+      model: "gpt-5.6-terra"
+      tools: [document_search, repository_read]
+    - id: auditor-finops-contingencia
+      specialty: >-
+        Audite os requisitos de monitoramento de nuvem, gastos emergenciais e contingência. Inspecione o cumprimento dos requisitos:
+        MUST-05 (arquivamento semanal obrigatório de relatórios FinOps de cloud com conteúdo mínimo exigido);
+        MUST-06 (regularização de gastos emergenciais fora do fluxo regular em até 15 dias corridos com aprovação retrospectiva CGTIC/CFO); e
+        MUST-07 (regras de uso e governança da reserva de contingência de TIC, incluindo a obrigatoriedade de despacho formal do Diretor de TIC
+        sobre a decisão de usar ou não a reserva quando houver overrun de linha orçamentária).
+      model: "gpt-5.6-terra"
+      tools: [document_search, repository_read]
+execution:
+  max_parallel_workers: 3
+  max_model_calls: 24
+  worker_max_turns: 8
+  timeout_seconds: 360
+  worker_timeout_seconds: 140
+  max_retries_per_task: 1
+  on_worker_failure: partial
+  allowed_models: ["gpt-5.6-luna", "gpt-5.6-sol", "gpt-5.6-terra"]
+output:
+  language: pt-BR
+  format: markdown
+  require_evidence: true
