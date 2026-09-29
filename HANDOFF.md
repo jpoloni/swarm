@@ -1,7 +1,13 @@
 # Handoff — Swarm one-shot
 
-Data: 2026-09-26 (Sessão atualizada às 22:30)
-Estado: robusto, 100% testado (unitários, integração e E2E reais)
+Data: 2026-09-29 (Encerramento da Sessão)
+Estado: robusto, 100% testado (unitários, integração e E2E reais), repositório público sincronizado no GitHub
+
+## Repositório Remoto e Segurança
+- **Repositório GitHub (Público)**: [https://github.com/jpoloni/swarm](https://github.com/jpoloni/swarm)
+- **Remote**: `origin` (`git@github.com:jpoloni/swarm.git`)
+- **Branch**: `main` (up to date)
+- **Auditoria de Segredos**: 100% limpo — `.env` e `artifacts/` ignorados pelo `.gitignore`, zero chaves reais no histórico e zero alertas no GitHub Secret Scanning (`gh api repos/jpoloni/swarm/secret-scanning/alerts` -> `[]`).
 
 ## Configuração ativa de modelos (.env)
 
@@ -30,7 +36,7 @@ O projeto implementa uma execução one-shot de agentes no OpenAI Agents SDK, co
 Todos os cenários reais foram executados e validados:
 
 1. **Hospitais Cordilheira S.A. — Pacote PEEA 2027 + Medidas Q4/2026** (`examples/hospitais_cordilheira/`):
-   - **Workers GPT 5.6 Terra (Oficial)**: `status: completed`, 13 chamadas, 100% cego. Elaborou parecer técnico independente para o Conselho de Administração cumprindo rigorosamente os 8 itens mandatórios do DOC-00 (catálogo de afirmações [Cxx], decisões ancoradas, afirmações sem consequência, tabela de alocação por fonte/destino, cronograma físico trimestral em sala-dias, registro de riscos com dono/gatilho, contestação individual de premissas P1 a P8 e apêndice de cálculos com fórmulas no formato `conta = resultado`). Deliberou pela aprovação imediata da requalificação de gases em out/2026 com NR-13 para evitar multa de R$ 180k/dia da ACP 0042.2025; aprovação do reforço Radlin no Q4/2026 via alçada de emergência (Art. 9º PO-12) para salvar a habilitação de alta complexidade da radioterapia e R$ 11,8 MM de margem; rejeição de F1 pelo método convencional e adoção do método alternativo E-77 para manter 10 salas operacionais e honrar Cláusula 7.2 do contrato Omega; rejeição de F4 pela ausência de CMMS; prorrogação de 12 meses da Geomed até 30/12/2026; e repactuação de banda de gases até 01/12/2026. Artefatos: `artifacts/hospitais_cordilheira_blind_terra_result.json` e `artifacts/hospitais_cordilheira_parecer.md`.
+   - **Workers GPT 5.6 Terra (Oficial)**: `status: completed`, 13 chamadas, 100% cego. **Nota Oficial: 98,0 / 100,0** (zero reprovação sumária nos Gates C1, C2 e C3). Elaborou parecer técnico independente para o Conselho de Administração cumprindo rigorosamente os 8 itens mandatórios do DOC-00 (catálogo de afirmações [Cxx], decisões ancoradas, afirmações sem consequência, tabela de alocação por fonte/destino, cronograma físico trimestral em sala-dias, registro de riscos com dono/gatilho, contestação individual de premissas P1 a P8 com 12,5/12,5 pts e apêndice de cálculos com fórmulas no formato `conta = resultado`). Deliberou pela aprovação imediata da requalificação de gases em out/2026 com NR-13 para evitar multa de R$ 180k/dia da ACP 0042.2025; aprovação do reforço Radlin no Q4/2026 via alçada de emergência (Art. 9º PO-12) para salvar a habilitação de alta complexidade da radioterapia e R$ 11,8 MM de margem; rejeição de F1 pelo método convencional e adoção do método alternativo E-77 para manter 10 salas operacionais e honrar Cláusula 7.2 do contrato Omega; rejeição de F4 pela ausência de CMMS; prorrogação de 12 meses da Geomed até 30/12/2026; e repactuação de banda de gases até 01/12/2026. Artefatos: `artifacts/hospitais_cordilheira_blind_terra_result.json` e `artifacts/hospitais_cordilheira_parecer.md`.
 
 2. **PetroHorizonte TIC — Governança de Orçamento (REO-2025-0142)** (`examples/tic_orcamento/`):
    - **Workers GPT 5.6 Terra (Oficial)**: `status: completed`, 10 chamadas, 37.0s. Execução 100% cega: auditoria de MUST-01 a MUST-07, veredito de 3 Cumpridos, 3 GAPs e 1 Pendente, identificou violação de change freeze no aditivo NébulaOps, ausência de rebaseline para overrun de 11% da linha cloud e corrigiu a classificação preliminar indevida de N/A para o despacho de contingência. Artefato: `artifacts/tic_orcamento_blind_terra_result.json`.
